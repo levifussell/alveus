@@ -11,3 +11,5 @@ https://arxiv.org/abs/1712.04323
 
 **Ensemble ESN**
 http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6748520
+
+Alveus is Latin for reservoir.
