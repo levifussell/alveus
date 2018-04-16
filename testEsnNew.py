@@ -24,20 +24,14 @@ if __name__ == "__main__":
 
     esn_outputs = []
 
-    # GENERATIVE =================================================
-    u_n_ESN = np.array(X_valid[0])
-    for _ in range(len(y_valid)):
-        u_n_ESN = np.array(esn.forward(u_n_ESN))
-        esn_outputs.append(u_n_ESN)
-        u_n_ESN = np.hstack((u_n_ESN, 1))
-
-    esn_outputs = np.array(esn_outputs).squeeze()
+    # generate test-data
+    esn_outputs = esn.generate(X_valid[0], len(y_valid))
 
     error = nrmse(y_valid, esn_outputs, data_mean)
     print('ESN NRMSE: %f' % error)
     
+    # plot the test versus train
     f, ax = plt.subplots(figsize=(12, 12))
-    #ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')
     ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')
     ax.plot(range(len(y_valid)), y_valid, label='True')
     plt.legend()

@@ -37,6 +37,11 @@ class LayeredModel(object):
         return x
 
     def train(self, X, y, warmup_timesteps=100):
+        """
+        x                   : input data to train on
+        y                   : output data to train on
+        warmup_timesteps    : number of timesteps to run the data before training (default=100)
+        """
         assert isinstance(self.layers[-1], LayerTrainable), "This model cannot be trained because the final layer of type {} is not trainable".format(type(self.layers[-1]))
 
         #############TODO: for now we assume ONLY the last layer can be trained
@@ -56,6 +61,24 @@ class LayeredModel(object):
 
         self.layers[-1].train(y_forward, y_nonwarmup)
 
+    def generate(self, x_start, count):
+        """
+        Given a single datapoint, the model will feed this back into itself 
+        to produce generative output data.
+
+        x_start     : single data point to start a generative process from
+        count       : number of times to run the generative process
+        """
+        y_outputs = []
+        x = np.array(x_start)
+        for _ in range(count):
+            x = np.array(self.forward(x))
+            y_outputs.append(x)
+            x = np.hstack((x, 1))
+
+        return np.array(y_outputs).squeeze()
+
+    # TODO: below needs to be refactored to the pep18 style
     def get_output_size(self):
         return self.layers[-1].output_size
 
