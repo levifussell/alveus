@@ -1,6 +1,6 @@
 import numpy as np
 
-from LayerReservoir import LayerReservoir
+from LayerEsnReservoir import LayerEsnReservoir
 from LayerLinearRegression import LayerLinearRegression
 from LayeredModel import LayeredModel
 
@@ -18,7 +18,7 @@ class EsnModel(LayeredModel):
         input_weight_scale  : how much to scale the input weights by
         regulariser         : regularisation parameter for the linear regression output
         """
-        layer_res = LayerReservoir(input_size, reservoir_size, echo_param)
+        layer_res = LayerEsnReservoir(input_size, reservoir_size, echo_param)
         layer_res.initialize_input_weights(scale=input_weight_scale)
         layer_res.initialize_reservoir_weights(spectral_scale=spectral_scale)
         layer_lr = LayerLinearRegression(reservoir_size+input_size, output_size, regulariser=regulariser)

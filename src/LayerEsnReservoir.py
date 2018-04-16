@@ -24,7 +24,7 @@ Notes (from scholarpedia):
         (1) todo
 """
 
-class LayerReservoir(Layer):
+class LayerEsnReservoir(Layer):
     """
     (args):
     input_size  :    input signal is input_size dimensions.
@@ -39,7 +39,7 @@ class LayerReservoir(Layer):
 
     def __init__(self, input_size, num_units, echo_param=0.6, idx=None, activation=np.tanh, 
                     debug=False):
-        super(LayerReservoir, self).__init__(input_size, num_units+input_size)
+        super(LayerEsnReservoir, self).__init__(input_size, num_units+input_size)
         self.num_units = num_units
         self.echo_param = echo_param
         self.activation = activation
@@ -135,7 +135,7 @@ class LayerReservoir(Layer):
 
         x: input_size-dimensional input vector
         """
-        super(LayerReservoir, self).forward(x)
+        super(LayerEsnReservoir, self).forward(x)
 
         # x = x.squeeze()
         # try:
