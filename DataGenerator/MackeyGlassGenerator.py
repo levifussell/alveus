@@ -15,27 +15,17 @@ beta = 0.2
 tau = 17 
 en = 10.
 
-print("hello")
-#def resetHistory():
-    #x_history.clear()
-    #x_history = deque(maxlen=tau)
-
-#def addToHistory(x):
-    #x_history.append(x)
-
 def run(num_data_samples=5000, init_x=1.0, init_x_tau=0.0):
     x_history = deque(maxlen=tau)
     x_history.clear()
-    #resetHistory()
-        # move data
+
     x_pos = init_x
     x_pos_tau = init_x_tau
 
-        # record timesteps
+    # record timesteps
     sample_timer = 0
 
-        # sample for training
-    #num_data_samples = 5000
+    # sample for training
     current_sample = 0
     data_samples = []
 
