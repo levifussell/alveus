@@ -61,17 +61,24 @@ class LayeredModel(object):
 
         self.layers[-1].train(y_forward, y_nonwarmup)
 
-    def generate(self, x_start, count):
+    def generate(self, x_data, count, reset_increment=-1):
         """
         Given a single datapoint, the model will feed this back into itself 
         to produce generative output data.
 
-        x_start     : single data point to start a generative process from
-        count       : number of times to run the generative process
+        x_data          : data to generate from (the first data point will be used unless reset_increment != -1)
+        count           : number of times to run the generative process
+        reset_increment : how often to feed the generator the 'real' data value (default=-1 <= no reset)
         """
         y_outputs = []
-        x = np.array(x_start)
-        for _ in range(count):
+        x = np.array(x_data[0])
+        for e in range(count):
+
+            # if we enable reseting, feed the 'real' data in
+            if reset_increment != -1 and e % reset_increment == 0:
+                assert e < len(x_data), "generating data is less than the specified count"
+                x = x_data[e]
+
             x = np.array(self.forward(x))
             y_outputs.append(x)
             x = np.hstack((x, 1))

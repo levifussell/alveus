@@ -76,7 +76,7 @@ class LayerEsnReservoir(Layer):
         out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
         out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
-    def initialize_input_weights(self, strategy='binary', scale=1e-2, offset=0.5, sparsity=1.0):
+    def initialize_input_weights(self, strategy='uniform-binary-sign', scale=1e-2, offset=0.5, sparsity=1.0):
         """
         (args): 
         strategy    :   how the input weights should be initialised (binary, uniform, guassian)
@@ -92,6 +92,9 @@ class LayerEsnReservoir(Layer):
             self.W_in = (np.random.rand(self.num_units, self.input_size) > 0.5).astype(float)
         elif strategy == 'uniform':
             self.W_in = np.random.rand(self.num_units, self.input_size)
+        elif strategy == 'uniform-binary-sign':
+            # based on: https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5629375    
+            self.W_in = np.random.rand(self.num_units, self.input_size) * ((np.random.rand(self.num_units, self.input_size) > 0.5).astype(float) * 2 - 1.0)
         elif strategy == 'gaussian':
             self.W_in = np.random.randn(self.num_units, self.input_size)
         else:

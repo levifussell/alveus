@@ -19,7 +19,7 @@ class EsnModel(LayeredModel):
         regulariser         : regularisation parameter for the linear regression output
         """
         layer_res = LayerEsnReservoir(input_size, reservoir_size, echo_param)
-        layer_res.initialize_input_weights(scale=input_weight_scale)
+        layer_res.initialize_input_weights(scale=input_weight_scale, strategy="binary")
         layer_res.initialize_reservoir_weights(spectral_scale=spectral_scale)
         layer_lr = LayerLinearRegression(reservoir_size+input_size, output_size, regulariser=regulariser)
         layers = [layer_res, layer_lr]
