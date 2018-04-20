@@ -9,15 +9,15 @@ from src.EsnModel import EsnModel
 from Helper.utils import nrmse
 
 if __name__ == "__main__":
-    data = np.array([run(6100)]).reshape(-1, 1)
-    # data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
+    # data = np.array([run(6100)]).reshape(-1, 1)
+    data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
     # normalising the data seems to stabilise the noise a bit
 
     data -= np.mean(data)
     # data -= 0.5
     # data *= 2.
     data_mean = np.mean(data, axis=0)
-    split = 5800
+    split = 5100
     # adding a bias significantly improves performance
     X_train = np.hstack((np.array(data[:split-1]), np.ones_like(data[:split-1, :1])))
     y_train = np.array(data[1:split])
@@ -53,19 +53,47 @@ if __name__ == "__main__":
             err = nrmse(y_valid_slice, esn_outputs_slice, data_mean)
             t_nrmse[n, i] = err
 
-        data_share = np.vstack((y_valid.T, esn_outputs[:, None].T)).T
-        print(np.shape(data_share))
-        print(np.std(y_valid, 0))
-        print(np.std(esn_outputs, 0))
+        # data_share = np.vstack((y_valid.T, esn_outputs[:, None].T)).T
+        # print(np.shape(data_share))
+        # print(np.std(y_valid, 0))
+        # print(np.std(esn_outputs, 0))
+        # print(np.shape(y_valid))
+        # y_t = np.tile(y_valid, (1, np.shape(y_valid)[0]))
+        # x_t = np.tile(range(len(y_valid)), (np.shape(y_valid)[0], 1)).T/len(y_valid)
+        # print(np.shape(y_t))
+        # e_t = np.tile(esn_outputs[:, None], (1, np.shape(y_valid)[0])).T
+        # e_x = np.tile(range(len(y_valid)), (np.shape(y_valid)[0], 1))/len(y_valid)
+        # cov_data = np.abs(y_t - e_t)
+
         # cov_data = np.cov(data_share)/(np.std(y_valid, 0)[0]*np.std(esn_outputs, 0))
-        cov_data = np.corrcoef(data_share)
+        # cov_data = np.corrcoef(data_share)
         # cov_data = sp.stats.spearmanr(y_valid, esn_outputs[:, None])
-        print(np.shape(cov_data))
+        # print(np.shape(cov_data))
+
+        data_valid_xy = np.vstack((np.array(range(len(y_valid)))[:, None].T, y_valid.T)).T
+        data_esn_xy = np.vstack((np.array(range(len(esn_outputs)))[:, None].T, esn_outputs[:, None].T)).T
+        print(np.shape(data_valid_xy))
+        print(np.shape(data_esn_xy))
+
+        p = 1.0
+        learn_rate = 0.001
+        for i in range(100):
+            scale_mat = np.array([[p, 0.],[0., 1.]])
+            er = np.dot(data_esn_xy, scale_mat)-data_valid_xy
+            # print("err: {}".format(er**2))
+            grad = np.dot(data_esn_xy.T, er)
+            print("grad: {}".format(grad))
+            print("p: {}".format(p))
+            p -= learn_rate*grad[0, 0]
+    
+        scale_mat = np.array([[p, 0.],[0., 1.]])
+        data_esn_xy_scaled = np.dot(data_esn_xy, scale_mat)
     
     # plot the test versus train
     f, ax = plt.subplots(figsize=(12, 12))
     ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')
     ax.plot(range(len(y_valid)), y_valid, label='True')
+    ax.plot(data_esn_xy_scaled[:, 0], data_esn_xy_scaled[:, 1], label="scaled")
     # ax.scatter(esn_outputs[:, 0], esn_outputs[:, 1], label='ESN')
     # ax.scatter(y_valid[:, 0], y_valid[:, 1], label='True')
     ax.legend()
@@ -79,9 +107,9 @@ if __name__ == "__main__":
     ax2.set_ylabel("NRMSE (sum)")
 
     # heatmap of cov
-    f3, ax3 = plt.subplots(figsize=(12, 12))
-    # ax3.imshow(cov_data, cmap='hot', interpolation='nearest')
-    print(cov_data)
-    sns.heatmap(cov_data, ax=ax3)
+    # f3, ax3 = plt.subplots(figsize=(12, 12))
+    # # ax3.imshow(cov_data, cmap='hot', interpolation='nearest')
+    # print(cov_data)
+    # sns.heatmap(cov_data, ax=ax3)
 
     plt.show()
