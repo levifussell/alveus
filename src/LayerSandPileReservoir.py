@@ -24,7 +24,7 @@ Notes (from scholarpedia):
         (1) todo
 """
 
-class LayerEsnReservoir(LayerReservoir):
+class LayerSandPileReservoir(LayerReservoir):
     """
     (args):
     input_size  :    input signal is input_size dimensions.
@@ -37,25 +37,19 @@ class LayerEsnReservoir(LayerReservoir):
 
     """
 
-    def __init__(self, input_size, num_units, echo_param=0.6, idx=None, activation=np.tanh, 
+    def __init__(self, input_size, num_units, idx=None, 
                     debug=False):
-        super(LayerEsnReservoir, self).__init__(input_size, num_units+input_size, num_units)
-        self.echo_param = echo_param
-        self.activation = activation
+        super(LayerSandPileReservoir, self).__init__(input_size, num_units+input_size, num_units)
         self.idx = idx                # <- can assign reservoir a unique ID for debugging
         self.debug = debug
 
+        assert int(np.sqrt(num_units))**2 == num_units, "number of units must be a square number!"
+
         # input-to-reservoir, reservoir-to-reservoir weights (not yet initialized)
         # self.W_in = np.zeros((self.num_units, self.input_size))
-        self.W_res = np.zeros((self.num_units, self.num_units))
-        self.state = np.zeros(self.num_units)            # <- unit states
+        self.state = np.zeros((int(np.sqrt(num_units)), int(np.sqrt(num_units))))            # <- unit states
 
-        # These parameters are initialized upon calling initialize_input_weights()
-        # and initialize_reservoir_weights().
-        self.spectral_scale = None
-        self.sparsity = None
-        self.W_res_init_strategy = None 
-        self.sparsity = None
+        self.thresholds = None
 
         # helpful information to track
         #if self.debug:
@@ -63,56 +57,35 @@ class LayerEsnReservoir(LayerReservoir):
         self.num_to_store = 50
         self.ins_init = False; self.res_init = False
 
-    def info(self):
-        """
-        (args): None
-        (description):
-        Print live info about the reservoir
-        """
-        out = u'Reservoir(num_units=%d, input_size=%d, \u03B5=%.2f)\n' % (self.num_units, self.input_size, self.echo_param)
-        out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
-        out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
+        self.spectral_scale = None
+
+    # def info(self):
+    #     """
+    #     (args): None
+    #     (description):
+    #     Print live info about the reservoir
+    #     """
+    #     out = u'Reservoir(num_units=%d, input_size=%d, \u03B5=%.2f)\n' % (self.num_units, self.input_size, self.echo_param)
+    #     out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
+    #     out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
+
+    def initialize_threshold(self, tresh_init_function):
+        self.thresholds = tresh_init_function()
+
+    def threshold_uniform(self, thresh_scale=0.5):
+        return np.zeros_like(self.state) + np.random.rand()*thresh_scale
 
     def initialize_reservoir(self, strategy='uniform', **kwargs):
                                      #spectral_scale=1.0, offset=0.5, 
                                      #sparsity=1.0):
-        # super(LayerEsnReservoir, self).initialize_reservoir(strategy, kwargs)
         if 'spectral_scale' not in kwargs.keys():
             self.spectral_scale = 1.0
         else:
             self.spectral_scale = kwargs['spectral_scale']
-        if 'strategy' not in kwargs.keys():
-            self.W_res_init_strategy = 'uniform'
-        else:
-            self.W_res_init_strategy = kwargs['strategy']
-        if 'sparsiy' not in kwargs.keys():
-            self.sparsity = 1.0
-        else:
-            self.sparsity = kwargs['sparsity']
-        if 'offset' not in kwargs.keys():
-            offset = 1.0
-        else:
-            offset = kwargs['offset']
-        # self.spectral_scale = spectral_scale
-        # self.W_res_init_strategy = strategy
-        # self.sparsity = sparsity
-        if self.W_res_init_strategy == 'binary':
-            self.W_res = (np.random.rand(self.num_units, self.num_units) > 0.5).astype(float)
-        elif self.W_res_init_strategy == 'uniform':
-            self.W_res = np.random.rand(self.num_units, self.num_units)
-        elif self.W_res_init_strategy == 'gaussian':
-            self.W_res = np.random.randn(self.num_units, self.num_units)
-        else:
-            raise ValueError('unknown res. weight init strategy %s' % self.W_res_init_strategy)
+            
+        if strategy == 'uniform':
+            self.state += np.random.rand()*self.spectral_scale
 
-        # apply the sparsity
-        # self.sparsity = sparsity
-        sparsity_matrix = (np.random.rand(self.num_units, self.num_units) < self.sparsity).astype(float)
-
-        self.W_res -= offset
-        self.W_res *= sparsity_matrix
-        self.W_res /= max(abs(la.eig(self.W_res)[0]))
-        self.W_res *= self.spectral_scale
         self.res_init = True
 
     def forward(self, x):
@@ -121,7 +94,7 @@ class LayerEsnReservoir(LayerReservoir):
 
         x: input_size-dimensional input vector
         """
-        super(LayerEsnReservoir, self).forward(x)
+        super(LayerSandPileReservoir, self).forward(x)
 
         # x = x.squeeze()
         # try:
@@ -135,15 +108,37 @@ class LayerEsnReservoir(LayerReservoir):
         assert self.ins_init, "Res. input weights not yet initialized (ID=%d)." % self.idx
         assert self.res_init, "Res. recurrent weights not yet initialized (ID=%d)." % self.idx
 
-        in_to_res = np.dot(self.W_in, x).squeeze()
-        res_to_res = np.dot(self.state.reshape(1, -1), self.W_res)
+        # print(np.shape(self.state))
+        # print(np.dot(self.W_in, x))
 
-        # Equation (1) in "Formalism and Theory" of Scholarpedia page
-        self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)
+        # add the 'sand' on top always
+        self.state += np.reshape(np.dot(self.W_in, x), np.shape(self.state))
+
+        # for now I do a simple, ad-hoc sandpile model
+        toppled = self.state > self.thresholds
+        toppled_idx = np.argwhere(toppled)
+
+        # remove sand from toppled points
+        self.state -= toppled.astype(float) * self.thresholds
+
+        # distribute sand evenly to neighbours (for now)
+        distr = self.thresholds[toppled_idx] / 4.0
+        # print(toppled_idx)
+        leftThreshold = (toppled_idx - np.array([0, 1])) % np.shape(self.state)[0] 
+        rightThreshold = (toppled_idx + np.array([0, 1])) % np.shape(self.state)[0] 
+        upThreshold = (toppled_idx + np.array([1, 0])) % np.shape(self.state)[0] 
+        downThreshold = (toppled_idx - np.array([1, 0])) % np.shape(self.state)[0] 
+        self.state[leftThreshold] += distr
+        self.state[rightThreshold] += distr
+        self.state[upThreshold] += distr
+        self.state[downThreshold] += distr
+
         #if self.debug:
         self.signals.append(self.state[:self.num_to_store].tolist())
 
-        # return the reservoir state appended to the input
-        output = np.hstack((self.state.squeeze(), x))
+        # print(self.state)
 
+        # return the reservoir state appended to the input
+        output = np.hstack((np.reshape(self.state, (1, np.shape(self.state)[0]**2)).squeeze(), x))
+        # print(output)
         return output
