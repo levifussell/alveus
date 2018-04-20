@@ -75,7 +75,7 @@ class LayerSandPileReservoir(LayerReservoir):
     def threshold_uniform(self, thresh_scale=0.5):
         return np.zeros_like(self.state) + np.random.rand()*thresh_scale
 
-    def initialize_reservoir(self, strategy='uniform', **kwargs):
+    def initialize_reservoir(self, strategy='static', **kwargs):
                                      #spectral_scale=1.0, offset=0.5, 
                                      #sparsity=1.0):
         if 'spectral_scale' not in kwargs.keys():
@@ -85,6 +85,8 @@ class LayerSandPileReservoir(LayerReservoir):
             
         if strategy == 'uniform':
             self.state += np.random.rand(np.shape(self.state)[0], np.shape(self.state)[0])*self.spectral_scale
+        elif strategy == 'static':
+            self.state += self.spectral_scale
 
         self.res_init = True
 
