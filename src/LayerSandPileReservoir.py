@@ -84,7 +84,7 @@ class LayerSandPileReservoir(LayerReservoir):
             self.spectral_scale = kwargs['spectral_scale']
             
         if strategy == 'uniform':
-            self.state += np.random.rand()*self.spectral_scale
+            self.state += np.random.rand(np.shape(self.state)[0], np.shape(self.state)[0])*self.spectral_scale
 
         self.res_init = True
 
