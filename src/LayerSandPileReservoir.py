@@ -69,8 +69,8 @@ class LayerSandPileReservoir(LayerReservoir):
     #     out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
     #     out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
-    def initialize_threshold(self, tresh_init_function):
-        self.thresholds = tresh_init_function()
+    def initialize_threshold(self, tresh_init_function, thresh_scale=0.5):
+        self.thresholds = tresh_init_function(thresh_scale)
 
     def threshold_uniform(self, thresh_scale=0.5):
         return np.zeros_like(self.state) + np.random.rand()*thresh_scale

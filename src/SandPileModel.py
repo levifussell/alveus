@@ -20,7 +20,7 @@ class SandPileModel(LayeredModel):
         """
         layer_res = LayerSandPileReservoir(input_size, reservoir_size)
         layer_res.initialize_input_weights(scale=input_weight_scale, strategy="uniform")
-        layer_res.initialize_threshold(layer_res.threshold_uniform())
+        layer_res.initialize_threshold(layer_res.threshold_uniform, thresh_scale=0.5)
         layer_res.initialize_reservoir(strategy='uniform', spectral_scale=1.1)
 
         layer_lr = LayerLinearRegression(reservoir_size+input_size, output_size, regulariser=regulariser)
