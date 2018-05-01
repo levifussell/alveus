@@ -48,12 +48,18 @@ class LayeredModel(object):
 
         # warmup stage
         for x in X[:warmup_timesteps]:
+            # some function that allows us to display
+            self.display()
+
             _ = self.forward(x, len(self.layers)-1)
 
         # training stage
         y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0], 
                                 self.layers[-1].input_size))
         for idx,x in enumerate(X[warmup_timesteps:]):
+            # some function that allows us to display
+            self.display()
+
             y_p = self.forward(x, len(self.layers)-1)
             y_forward[idx, :] = y_p
 
@@ -74,6 +80,9 @@ class LayeredModel(object):
         x = np.array(x_data[0])
         for e in range(count):
 
+            # some function that allows us to display
+            self.display()
+
             # if we enable reseting, feed the 'real' data in
             if reset_increment != -1 and e % reset_increment == 0:
                 assert e < len(x_data), "generating data is less than the specified count"
@@ -91,6 +100,9 @@ class LayeredModel(object):
 
     def get_input_size(self):
         return self.layers[0].input_size
+
+    def display(self):
+        pass
     
         
 

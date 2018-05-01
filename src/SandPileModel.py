@@ -4,11 +4,17 @@ from LayerSandPileReservoir import LayerSandPileReservoir
 from LayerLinearRegression import LayerLinearRegression
 from LayeredModel import LayeredModel
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import time
+
 class SandPileModel(LayeredModel):
 
     def __init__(self, input_size, output_size, reservoir_size, 
-                    spectral_scale=1.25, echo_param=0.85, 
-                    input_weight_scale=5.0, regulariser=1e-3):
+                    # spectral_scale=0.29401253252, thresh_scale=1.1142252352,
+                    spectral_scale=0.2, thresh_scale=3.0,
+                    input_weight_scale=0.01, regulariser=1e-6):
         """
         input_size          : input dimension of the data
         output_size         : output dimension of the data
@@ -18,12 +24,54 @@ class SandPileModel(LayeredModel):
         input_weight_scale  : how much to scale the input weights by
         regulariser         : regularisation parameter for the linear regression output
         """
+
+        # live info
+        self.live_im = None
+        self.live_fig = None
+
         layer_res = LayerSandPileReservoir(input_size, reservoir_size)
-        layer_res.initialize_input_weights(scale=input_weight_scale, strategy="uniform")
-        layer_res.initialize_threshold(layer_res.threshold_uniform, thresh_scale=0.5)
-        layer_res.initialize_reservoir(strategy='static', spectral_scale=1.1)
+        layer_res.initialize_input_weights(scale=input_weight_scale, strategy="uniform", offset=0.0, sparsity=0.1)
+        # print(layer_res.W_in)
+        # layer_res.initialize_threshold(layer_res.threshold_uniform, thresh_scale=thresh_scale)
+        layer_res.initialize_threshold(layer_res.threshold_unit, thresh_scale=thresh_scale)
+        layer_res.initialize_reservoir(strategy='uniform', spectral_scale=spectral_scale)
 
         layer_lr = LayerLinearRegression(reservoir_size+input_size, output_size, regulariser=regulariser)
-        layers = [layer_res, layer_lr]
+        self.layers = [layer_res, layer_lr]
 
-        super(SandPileModel, self).__init__(layers)
+        super(SandPileModel, self).__init__(self.layers)
+
+    def plot_reservoir(self):
+        signals = self.layers[0].signals
+
+        signals_shape = np.reshape(signals, (np.shape(signals)[0], -1))
+
+        # print(np.shape(signals_shape))
+
+        sns.heatmap(signals_shape)
+
+        plt.plot()
+
+    # def display(self):
+    #     signals = self.layers[0].state
+    #     signals_shape = np.reshape(signals, (np.shape(signals)[0], -1))
+    #     # print(signals_shape)
+    #     # print(np.shape(signals_shape))
+    #     # create the figure
+    #     if self.live_fig == None:
+    #         self.live_fig = plt.figure()
+    #         ax = self.live_fig.add_subplot(111)
+    #         self.live_im = ax.imshow(signals_shape, cmap="Reds")
+    #         # self.live_im = ax.imshow(self.weights,cmap="Reds")
+    #         plt.show(block=False)
+    #     else:
+    #         # draw some data in loop
+    #         # wait for a second
+    #         time.sleep(0.1)
+    #         # replace the image contents
+    #         self.live_im.set_array(signals_shape)
+    #         # self.live_im.set_array(self.weights)
+    #         # redraw the figure
+    #         self.live_fig.canvas.draw()
+    #         plt.pause(0.001)
+

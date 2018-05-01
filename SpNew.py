@@ -13,11 +13,11 @@ if __name__ == "__main__":
     # data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
     # normalising the data seems to stabilise the noise a bit
 
-    data -= np.mean(data)
+    # data -= np.mean(data)
     # data -= 0.5
     # data *= 2.
     data_mean = np.mean(data, axis=0)
-    split = 5100
+    split = 5000
     # adding a bias significantly improves performance
     X_train = np.hstack((np.array(data[:split-1]), np.ones_like(data[:split-1, :1])))
     y_train = np.array(data[1:split])
@@ -89,6 +89,15 @@ if __name__ == "__main__":
         # scale_mat = np.array([[p, 0.],[0., 1.]])
         # data_esn_xy_scaled = np.dot(data_esn_xy, scale_mat)
     
+    esn.plot_reservoir()
+
+    f3, ax3 = plt.subplots(figsize=(12, 12))
+    w = esn.layers[1].W_out.reshape((1, -1)).T
+    print(np.shape(w))
+    ax3.plot(w)
+    ax3.set_title("weights")
+
+
     # plot the test versus train
     f, ax = plt.subplots(figsize=(12, 12))
     ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')

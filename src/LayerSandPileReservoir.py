@@ -30,14 +30,14 @@ class LayerSandPileReservoir(LayerReservoir):
     input_size  :    input signal is input_size dimensions.
     num_units   :    reservoir has num_units units.
     idx         :    unique ID of the reservoir (default=None) -- good for debug/multiple reservoirs
-    echo_param  :    leaky rate of the reservoir units
-    activation  :    activation function of the reservoir units (default=tanh)
+    topple_iters:    number of iterations to run of the model before the next data input
+    topple_div  :    amount of sand to divide to the neighbours
     debug       :    when True, this will print live information (default=False)
     (description): reservoir class. Extend this class to create different reservoirs
 
     """
 
-    def __init__(self, input_size, num_units, idx=None, 
+    def __init__(self, input_size, num_units, topple_iters=1, topple_div=6, idx=None, 
                     debug=False):
         super(LayerSandPileReservoir, self).__init__(input_size, num_units+input_size, num_units)
         self.idx = idx                # <- can assign reservoir a unique ID for debugging
@@ -49,35 +49,30 @@ class LayerSandPileReservoir(LayerReservoir):
         # self.W_in = np.zeros((self.num_units, self.input_size))
         self.state = np.zeros((int(np.sqrt(num_units)), int(np.sqrt(num_units))))            # <- unit states
 
+        self.topple_iters = topple_iters
+        self.topple_div = topple_div
+
         self.thresholds = None
 
         # helpful information to track
-        #if self.debug:
         self.signals = [] # <- reservoir states over time during training
-        self.num_to_store = 50
         self.ins_init = False; self.res_init = False
 
         self.spectral_scale = None
-
-    # def info(self):
-    #     """
-    #     (args): None
-    #     (description):
-    #     Print live info about the reservoir
-    #     """
-    #     out = u'Reservoir(num_units=%d, input_size=%d, \u03B5=%.2f)\n' % (self.num_units, self.input_size, self.echo_param)
-    #     out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
-    #     out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
     def initialize_threshold(self, tresh_init_function, thresh_scale=0.5):
         self.thresholds = tresh_init_function(thresh_scale)
 
     def threshold_uniform(self, thresh_scale=0.5):
+        return np.zeros_like(self.state) + np.random.rand(np.shape(self.state)[0], np.shape(self.state)[1])*thresh_scale
+
+    def threshold_static_uniform(self, thresh_scale=0.5):
         return np.zeros_like(self.state) + np.random.rand()*thresh_scale
 
+    def threshold_unit(self, thresh_scale=0.5):
+        return np.zeros_like(self.state) + thresh_scale
+
     def initialize_reservoir(self, strategy='static', **kwargs):
-                                     #spectral_scale=1.0, offset=0.5, 
-                                     #sparsity=1.0):
         if 'spectral_scale' not in kwargs.keys():
             self.spectral_scale = 1.0
         else:
@@ -85,6 +80,9 @@ class LayerSandPileReservoir(LayerReservoir):
             
         if strategy == 'uniform':
             self.state += np.random.rand(np.shape(self.state)[0], np.shape(self.state)[0])*self.spectral_scale
+            # s = np.random.rand()*self.spectral_scale
+            # print(s)
+            # self.state += s
         elif strategy == 'static':
             self.state += self.spectral_scale
 
@@ -98,49 +96,45 @@ class LayerSandPileReservoir(LayerReservoir):
         """
         super(LayerSandPileReservoir, self).forward(x)
 
-        # x = x.squeeze()
-        # try:
-        #     assert (self.input_size == 1 and x.shape == ()) or x.shape[0] == self.W_in.shape[1], \
-        #         "u(n): %s.  W_res: %s (ID=%d)" % (x.shape, self.W_res.shape, self.idx)
-        # except:
-        #     print(x.shape)
-        #     print(self.W_in.shape)
-        #     print(self.W_res.shape)
-        #     raise
         assert self.ins_init, "Res. input weights not yet initialized (ID=%d)." % self.idx
         assert self.res_init, "Res. recurrent weights not yet initialized (ID=%d)." % self.idx
 
-        # print(np.shape(self.state))
-        # print(np.dot(self.W_in, x))
-
         # add the 'sand' on top always
-        self.state += np.reshape(np.dot(self.W_in, x), np.shape(self.state))
+        sand_to_drop = np.reshape(np.dot(self.W_in, x), np.shape(self.state))
+        self.state += sand_to_drop  
 
-        # for now I do a simple, ad-hoc sandpile model
-        toppled = self.state > self.thresholds
-        toppled_idx = np.argwhere(toppled)
 
-        # remove sand from toppled points
-        self.state -= toppled.astype(float) * self.thresholds
+        for i in range(self.topple_iters):
+            # for now I do a simple, ad-hoc sandpile model
+            toppled = np.abs(self.state) >= self.thresholds
+            # toppled_idx = np.argwhere(toppled)
+            # print(toppled)
 
-        # distribute sand evenly to neighbours (for now)
-        distr = self.thresholds[toppled_idx] / 4.0
-        # print(toppled_idx)
-        leftThreshold = (toppled_idx - np.array([0, 1])) % np.shape(self.state)[0] 
-        rightThreshold = (toppled_idx + np.array([0, 1])) % np.shape(self.state)[0] 
-        upThreshold = (toppled_idx + np.array([1, 0])) % np.shape(self.state)[0] 
-        downThreshold = (toppled_idx - np.array([1, 0])) % np.shape(self.state)[0] 
-        self.state[leftThreshold] += distr
-        self.state[rightThreshold] += distr
-        self.state[upThreshold] += distr
-        self.state[downThreshold] += distr
+            # remove sand from toppled points
+            # sand_removed = toppled.astype(float) * (self.state - self.thresholds)
+            sand_removed = toppled.astype(float) * self.state #self.thresholds
 
-        #if self.debug:
-        self.signals.append(self.state[:self.num_to_store].tolist())
+            self.state -= sand_removed #toppled.astype(float) * self.thresholds
 
-        # print(self.state)
+            # distribute sand evenly to neighbours (for now)
+            distr = sand_removed / self.topple_div #np.shape(self.state)[0]
+
+            leftDistr = np.hstack((distr[:, 1:], distr[:, 0][:, None]))
+            rightDistr = np.hstack((distr[:, -1][:, None], distr[:, :-1]))
+            upDistr = np.vstack((distr[1:, :], distr[0, :][None, :]))
+            downDistr = np.vstack(( distr[-1, :][None, :], distr[:-1, :]))
+
+            self.state += leftDistr + rightDistr + upDistr + downDistr
+
+            # uncomment below to distribute to 15 random cells
+            # for i in range(15):
+            #     id = (np.random.rand(np.shape(self.state)[0], np.shape(self.state)[1])).astype(int)
+            #     self.state[id] += distr
+            
+            self.signals.append(self.state.tolist())
+
 
         # return the reservoir state appended to the input
         output = np.hstack((np.reshape(self.state, (1, np.shape(self.state)[0]**2)).squeeze(), x))
-        # print(output)
+
         return output
