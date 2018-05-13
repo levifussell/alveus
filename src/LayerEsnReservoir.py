@@ -4,7 +4,7 @@ import pickle as pkl
 import time
 import matplotlib.pyplot as plt
 
-from Layer import Layer
+from LayerReservoir import LayerReservoir
 
 """
 Notes (from scholarpedia):
@@ -24,7 +24,7 @@ Notes (from scholarpedia):
         (1) todo
 """
 
-class LayerEsnReservoir(Layer):
+class LayerEsnReservoir(LayerReservoir):
     """
     (args):
     input_size  :    input signal is input_size dimensions.
@@ -39,15 +39,14 @@ class LayerEsnReservoir(Layer):
 
     def __init__(self, input_size, num_units, echo_param=0.6, idx=None, activation=np.tanh, 
                     debug=False):
-        super(LayerEsnReservoir, self).__init__(input_size, num_units+input_size)
-        self.num_units = num_units
+        super(LayerEsnReservoir, self).__init__(input_size, num_units+input_size, num_units)
         self.echo_param = echo_param
         self.activation = activation
         self.idx = idx                # <- can assign reservoir a unique ID for debugging
         self.debug = debug
 
         # input-to-reservoir, reservoir-to-reservoir weights (not yet initialized)
-        self.W_in = np.zeros((self.num_units, self.input_size))
+        # self.W_in = np.zeros((self.num_units, self.input_size))
         self.W_res = np.zeros((self.num_units, self.num_units))
         self.state = np.zeros(self.num_units)            # <- unit states
 
@@ -55,9 +54,7 @@ class LayerEsnReservoir(Layer):
         # and initialize_reservoir_weights().
         self.spectral_scale = None
         self.sparsity = None
-        self.W_res_init_strategy = None
-        self.input_weights_scale = None
-        self.W_in_init_strategy = None
+        self.W_res_init_strategy = None 
         self.sparsity = None
 
         # helpful information to track
@@ -76,54 +73,40 @@ class LayerEsnReservoir(Layer):
         out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
         out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
-    def initialize_input_weights(self, strategy='uniform-binary-sign', scale=1e-2, offset=0.5, sparsity=1.0):
-        """
-        (args): 
-        strategy    :   how the input weights should be initialised (binary, uniform, guassian)
-        scale       :   how much to scale the input weights by after initialisation (default=1e-2)
-        offset      :   bias offset to apply to all input weights after initialisation (default=0.5)
-        sparsity    :   probability of an input weight being non-zero (default=1.0)
-        (description):
-        Print live info about the reservoir
-        """
-        self.input_weights_scale = scale
-        self.W_in_init_strategy = strategy
-        if strategy == 'binary':
-            self.W_in = (np.random.rand(self.num_units, self.input_size) > 0.5).astype(float)
-        elif strategy == 'uniform':
-            self.W_in = np.random.rand(self.num_units, self.input_size)
-        elif strategy == 'uniform-binary-sign':
-            # based on: https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5629375    
-            self.W_in = np.random.rand(self.num_units, self.input_size) * ((np.random.rand(self.num_units, self.input_size) > 0.5).astype(float) * 2 - 1.0)
-        elif strategy == 'gaussian':
-            self.W_in = np.random.randn(self.num_units, self.input_size)
+    def initialize_reservoir(self, strategy='uniform', **kwargs):
+                                     #spectral_scale=1.0, offset=0.5, 
+                                     #sparsity=1.0):
+        # super(LayerEsnReservoir, self).initialize_reservoir(strategy, kwargs)
+        if 'spectral_scale' not in kwargs.keys():
+            self.spectral_scale = 1.0
         else:
-            raise ValueError('unknown input weight init strategy %s' % strategy)
-
-        self.sparsity_input = sparsity
-        sparsity_matrix = (np.random.rand(self.num_units, self.input_size) < self.sparsity_input).astype(float)
-
-        self.W_in -= offset
-        self.W_in *= sparsity_matrix
-        self.W_in *= self.input_weights_scale
-        self.ins_init = True
-
-    def initialize_reservoir_weights(self, strategy='uniform', spectral_scale=1.0, offset=0.5, 
-                                     sparsity=1.0):
-        self.spectral_scale = spectral_scale
-        self.W_res_init_strategy = strategy
-        self.sparsity = sparsity
-        if strategy == 'binary':
+            self.spectral_scale = kwargs['spectral_scale']
+        if 'strategy' not in kwargs.keys():
+            self.W_res_init_strategy = 'uniform'
+        else:
+            self.W_res_init_strategy = kwargs['strategy']
+        if 'sparsiy' not in kwargs.keys():
+            self.sparsity = 1.0
+        else:
+            self.sparsity = kwargs['sparsity']
+        if 'offset' not in kwargs.keys():
+            offset = 1.0
+        else:
+            offset = kwargs['offset']
+        # self.spectral_scale = spectral_scale
+        # self.W_res_init_strategy = strategy
+        # self.sparsity = sparsity
+        if self.W_res_init_strategy == 'binary':
             self.W_res = (np.random.rand(self.num_units, self.num_units) > 0.5).astype(float)
-        elif strategy == 'uniform':
+        elif self.W_res_init_strategy == 'uniform':
             self.W_res = np.random.rand(self.num_units, self.num_units)
-        elif strategy == 'gaussian':
+        elif self.W_res_init_strategy == 'gaussian':
             self.W_res = np.random.randn(self.num_units, self.num_units)
         else:
-            raise ValueError('unknown res. weight init strategy %s' % strategy)
+            raise ValueError('unknown res. weight init strategy %s' % self.W_res_init_strategy)
 
         # apply the sparsity
-        self.sparsity = sparsity
+        # self.sparsity = sparsity
         sparsity_matrix = (np.random.rand(self.num_units, self.num_units) < self.sparsity).astype(float)
 
         self.W_res -= offset

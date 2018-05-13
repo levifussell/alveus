@@ -5,19 +5,19 @@ import scipy as sp
 
 from DataGenerator.MackeyGlassGenerator import run
 from DataGenerator.HenonGenerator import runHenon
-from src.EsnModel import EsnModel
+from src.SandPileModel import SandPileModel
 from Helper.utils import nrmse
 
 if __name__ == "__main__":
-    # data = np.array([run(6100)]).reshape(-1, 1)
-    data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
+    data = np.array([run(6100)]).reshape(-1, 1)
+    # data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
     # normalising the data seems to stabilise the noise a bit
 
-    data -= np.mean(data)
+    # data -= np.mean(data)
     # data -= 0.5
     # data *= 2.
     data_mean = np.mean(data, axis=0)
-    split = 5100
+    split = 5000
     # adding a bias significantly improves performance
     X_train = np.hstack((np.array(data[:split-1]), np.ones_like(data[:split-1, :1])))
     y_train = np.array(data[1:split])
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     cov = np.zeros((len(y_valid), len(y_valid)))
     for n in range(num):
         # esn = ESN(2, 1, 500, echo_param=0.85, regulariser=1e-6)
-        esn = EsnModel(2, 1, 500)
+        esn = SandPileModel(2, 1, 625)
         # esn = EsnModel(2, 1, 1000, 
         #                 spectral_scale=1.0, echo_param=0.85, 
         #                 input_weight_scale=1.0, regulariser=1e-5)
@@ -70,30 +70,39 @@ if __name__ == "__main__":
         # cov_data = sp.stats.spearmanr(y_valid, esn_outputs[:, None])
         # print(np.shape(cov_data))
 
-        data_valid_xy = np.vstack((np.array(range(len(y_valid)))[:, None].T, y_valid.T)).T
-        data_esn_xy = np.vstack((np.array(range(len(esn_outputs)))[:, None].T, esn_outputs[:, None].T)).T
-        print(np.shape(data_valid_xy))
-        print(np.shape(data_esn_xy))
+        # data_valid_xy = np.vstack((np.array(range(len(y_valid)))[:, None].T, y_valid.T)).T
+        # data_esn_xy = np.vstack((np.array(range(len(esn_outputs)))[:, None].T, esn_outputs[:, None].T)).T
+        # print(np.shape(data_valid_xy))
+        # print(np.shape(data_esn_xy))
 
-        p = 1.0
-        learn_rate = 0.001
-        for i in range(100):
-            scale_mat = np.array([[p, 0.],[0., 1.]])
-            er = np.dot(data_esn_xy, scale_mat)-data_valid_xy
-            # print("err: {}".format(er**2))
-            grad = np.dot(data_esn_xy.T, er)
-            print("grad: {}".format(grad))
-            print("p: {}".format(p))
-            p -= learn_rate*grad[0, 0]
+        # p = 1.0
+        # learn_rate = 0.001
+        # for i in range(100):
+        #     scale_mat = np.array([[p, 0.],[0., 1.]])
+        #     er = np.dot(data_esn_xy, scale_mat)-data_valid_xy
+        #     # print("err: {}".format(er**2))
+        #     grad = np.dot(data_esn_xy.T, er)
+        #     print("grad: {}".format(grad))
+        #     print("p: {}".format(p))
+        #     p -= learn_rate*grad[0, 0]
     
-        scale_mat = np.array([[p, 0.],[0., 1.]])
-        data_esn_xy_scaled = np.dot(data_esn_xy, scale_mat)
+        # scale_mat = np.array([[p, 0.],[0., 1.]])
+        # data_esn_xy_scaled = np.dot(data_esn_xy, scale_mat)
     
+    esn.plot_reservoir()
+
+    f3, ax3 = plt.subplots(figsize=(12, 12))
+    w = esn.layers[1].W_out.reshape((1, -1)).T
+    print(np.shape(w))
+    ax3.plot(w)
+    ax3.set_title("weights")
+
+
     # plot the test versus train
     f, ax = plt.subplots(figsize=(12, 12))
     ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')
     ax.plot(range(len(y_valid)), y_valid, label='True')
-    ax.plot(data_esn_xy_scaled[:, 0], data_esn_xy_scaled[:, 1], label="scaled")
+    # ax.plot(data_esn_xy_scaled[:, 0], data_esn_xy_scaled[:, 1], label="scaled")
     # ax.scatter(esn_outputs[:, 0], esn_outputs[:, 1], label='ESN')
     # ax.scatter(y_valid[:, 0], y_valid[:, 1], label='True')
     ax.legend()
