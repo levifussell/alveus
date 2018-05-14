@@ -1,12 +1,15 @@
+from sys import path
+path.insert(0, '../alveus/')
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy as sp
 
-from DataGenerator.MackeyGlassGenerator import run
-from DataGenerator.HenonGenerator import runHenon
-from src.SandPileModel import SandPileModel
-from utils.utils import nrmse
+from data_generator.MackeyGlassGenerator import run
+from data_generator.HenonGenerator import runHenon
+from SandPileModel import SandPileModel
+from utils.metrics import nrmse
 
 if __name__ == "__main__":
     data = np.array([run(6100)]).reshape(-1, 1)
