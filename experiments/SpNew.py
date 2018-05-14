@@ -6,7 +6,7 @@ import scipy as sp
 from DataGenerator.MackeyGlassGenerator import run
 from DataGenerator.HenonGenerator import runHenon
 from src.SandPileModel import SandPileModel
-from Helper.utils import nrmse
+from utils.utils import nrmse
 
 if __name__ == "__main__":
     data = np.array([run(6100)]).reshape(-1, 1)
