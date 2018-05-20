@@ -1,8 +1,4 @@
 import numpy as np
-import numpy.linalg as la
-import pickle as pkl
-import time
-import matplotlib.pyplot as plt
 
 from Layer import Layer
 
@@ -23,6 +19,7 @@ Notes (from scholarpedia):
     -CONNECTIVITY/SPARSITY of reservoir weight matrix:
         (1) todo
 """
+
 
 class LayerReservoir(Layer):
     """
@@ -56,7 +53,7 @@ class LayerReservoir(Layer):
 
     def initialize_input_weights(self, strategy='uniform-binary-sign', scale=1e-2, offset=0.5, sparsity=1.0):
         """
-        (args): 
+        (args):
         strategy    :   how the input weights should be initialised (binary, uniform, guassian)
         scale       :   how much to scale the input weights by after initialisation (default=1e-2)
         offset      :   bias offset to apply to all input weights after initialisation (default=0.5)
