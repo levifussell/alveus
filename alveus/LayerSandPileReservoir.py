@@ -1,8 +1,4 @@
 import numpy as np
-import numpy.linalg as la
-import pickle as pkl
-import time
-import matplotlib.pyplot as plt
 
 from LayerReservoir import LayerReservoir
 
@@ -24,6 +20,7 @@ Notes (from scholarpedia):
         (1) todo
 """
 
+
 class LayerSandPileReservoir(LayerReservoir):
     """
     (args):
@@ -37,17 +34,19 @@ class LayerSandPileReservoir(LayerReservoir):
 
     """
 
-    def __init__(self, input_size, num_units, topple_iters=1, topple_div=6, idx=None, 
-                    debug=False):
+    def __init__(self, input_size, num_units, topple_iters=1, topple_div=6,
+                 idx=None, debug=False):
         super(LayerSandPileReservoir, self).__init__(input_size, num_units+input_size, num_units)
-        self.idx = idx                # <- can assign reservoir a unique ID for debugging
+        # <- can assign reservoir a unique ID for debugging
+        self.idx = idx
         self.debug = debug
 
         assert int(np.sqrt(num_units))**2 == num_units, "number of units must be a square number!"
 
         # input-to-reservoir, reservoir-to-reservoir weights (not yet initialized)
         # self.W_in = np.zeros((self.num_units, self.input_size))
-        self.state = np.zeros((int(np.sqrt(num_units)), int(np.sqrt(num_units))))            # <- unit states
+        self.state = np.zeros((int(np.sqrt(num_units)),
+                               int(np.sqrt(num_units))))  # <- unit states
 
         self.topple_iters = topple_iters
         self.topple_div = topple_div
@@ -55,8 +54,9 @@ class LayerSandPileReservoir(LayerReservoir):
         self.thresholds = None
 
         # helpful information to track
-        self.signals = [] # <- reservoir states over time during training
-        self.ins_init = False; self.res_init = False
+        self.signals = []  # <- reservoir states over time during training
+        self.ins_init = False
+        self.res_init = False
 
         self.spectral_scale = None
 
@@ -64,7 +64,10 @@ class LayerSandPileReservoir(LayerReservoir):
         self.thresholds = tresh_init_function(thresh_scale)
 
     def threshold_uniform(self, thresh_scale=0.5):
-        return np.zeros_like(self.state) + np.random.rand(np.shape(self.state)[0], np.shape(self.state)[1])*thresh_scale
+        return np.zeros_like(self.state) + \
+            np.random.rand(np.shape(self.state)[0],
+                           np.shape(self.state)[1]) * \
+            thresh_scale
 
     def threshold_static_uniform(self, thresh_scale=0.5):
         return np.zeros_like(self.state) + np.random.rand()*thresh_scale
@@ -77,7 +80,7 @@ class LayerSandPileReservoir(LayerReservoir):
             self.spectral_scale = 1.0
         else:
             self.spectral_scale = kwargs['spectral_scale']
-            
+
         if strategy == 'uniform':
             self.state += np.random.rand(np.shape(self.state)[0], np.shape(self.state)[0])*self.spectral_scale
             # s = np.random.rand()*self.spectral_scale
@@ -101,8 +104,7 @@ class LayerSandPileReservoir(LayerReservoir):
 
         # add the 'sand' on top always
         sand_to_drop = np.reshape(np.dot(self.W_in, x), np.shape(self.state))
-        self.state += sand_to_drop  
-
+        self.state += sand_to_drop
 
         for i in range(self.topple_iters):
             # for now I do a simple, ad-hoc sandpile model
@@ -112,17 +114,17 @@ class LayerSandPileReservoir(LayerReservoir):
 
             # remove sand from toppled points
             # sand_removed = toppled.astype(float) * (self.state - self.thresholds)
-            sand_removed = toppled.astype(float) * self.state #self.thresholds
+            sand_removed = toppled.astype(float) * self.state # self.thresholds
 
-            self.state -= sand_removed #toppled.astype(float) * self.thresholds
+            self.state -= sand_removed  # toppled.astype(float) * self.thresholds
 
             # distribute sand evenly to neighbours (for now)
-            distr = sand_removed / self.topple_div #np.shape(self.state)[0]
+            distr = sand_removed / self.topple_div  # np.shape(self.state)[0]
 
             leftDistr = np.hstack((distr[:, 1:], distr[:, 0][:, None]))
             rightDistr = np.hstack((distr[:, -1][:, None], distr[:, :-1]))
             upDistr = np.vstack((distr[1:, :], distr[0, :][None, :]))
-            downDistr = np.vstack(( distr[-1, :][None, :], distr[:-1, :]))
+            downDistr = np.vstack((distr[-1, :][None, :], distr[:-1, :]))
 
             self.state += leftDistr + rightDistr + upDistr + downDistr
 
@@ -132,7 +134,6 @@ class LayerSandPileReservoir(LayerReservoir):
             #     self.state[id] += distr
             
             self.signals.append(self.state.tolist())
-
 
         # return the reservoir state appended to the input
         output = np.hstack((np.reshape(self.state, (1, np.shape(self.state)[0]**2)).squeeze(), x))
