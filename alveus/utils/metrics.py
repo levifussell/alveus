@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def mse(y_true, y_pred):
     """
     Calculates the mean square error (MSE) of y_true and y_pred.
@@ -21,4 +22,3 @@ def nrmse(y_true, y_pred, MEAN_OF_DATA):
     errors = np.sum(np.square(y_true - y_pred))
 
     return np.sqrt(errors / std)
-    
