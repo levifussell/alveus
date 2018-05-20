@@ -20,7 +20,8 @@ class LayerLinearRegression(LayerTrainable):
         self.regulariser = regulariser
         self.debug = debug
 
-        self.W_out = np.ones((self.output_size, self.input_size))   # output weights to train
+        # output weights to train
+        self.W_out = np.ones((self.output_size, self.input_size))
 
     def forward(self, x):
         super(LayerLinearRegression, self).forward(x)
@@ -39,8 +40,10 @@ class LayerLinearRegression(LayerTrainable):
         # add a bias
         S = np.hstack((y_pred, np.ones((y_pred.shape[0], 1))))
         # Solve (W_out)(S.T) = (D) by least squares
-        T1 = np.dot(y_actual.T, S)                                                  
-        reg = self.regulariser * np.eye(np.shape(S)[1])     # compute the regulariser
-        reg[-1, -1] = 0                                     # no regularisation on the bias
-        T2 = la.inv(np.dot(S.T, S) + reg) 
-        self.W_out = np.dot(T1, T2)                         
+        T1 = np.dot(y_actual.T, S)
+        # compute the regulariser
+        reg = self.regulariser * np.eye(np.shape(S)[1])
+        # no regularisation on the bias
+        reg[-1, -1] = 0
+        T2 = la.inv(np.dot(S.T, S) + reg)
+        self.W_out = np.dot(T1, T2)
