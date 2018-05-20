@@ -1,6 +1,3 @@
-from sys import path
-path.insert(0, '../alveus/')
-
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -10,6 +7,10 @@ from data_generator.MackeyGlassGenerator import run
 from data_generator.HenonGenerator import runHenon
 from EsnModel import EsnModel
 from utils.metrics import nrmse
+
+from sys import path
+path.insert(0, '../alveus/')
+
 
 if __name__ == "__main__":
     # data = np.array([run(6100)]).reshape(-1, 1)
@@ -36,8 +37,8 @@ if __name__ == "__main__":
     for n in range(num):
         # esn = ESN(2, 1, 500, echo_param=0.85, regulariser=1e-6)
         esn = EsnModel(2, 1, 500)
-        # esn = EsnModel(2, 1, 1000, 
-        #                 spectral_scale=1.0, echo_param=0.85, 
+        # esn = EsnModel(2, 1, 1000,
+        #                 spectral_scale=1.0, echo_param=0.85,
         #                 input_weight_scale=1.0, regulariser=1e-5)
         esn.train(X_train, y_train)
 
@@ -88,10 +89,10 @@ if __name__ == "__main__":
             print("grad: {}".format(grad))
             print("p: {}".format(p))
             p -= learn_rate*grad[0, 0]
-    
-        scale_mat = np.array([[p, 0.],[0., 1.]])
+
+        scale_mat = np.array([[p, 0.], [0., 1.]])
         data_esn_xy_scaled = np.dot(data_esn_xy, scale_mat)
-    
+
     # plot the test versus train
     f, ax = plt.subplots(figsize=(12, 12))
     ax.plot(range(len(esn_outputs)), esn_outputs, label='ESN')
