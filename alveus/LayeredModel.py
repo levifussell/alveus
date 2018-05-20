@@ -1,6 +1,7 @@
 import numpy as np
 
-from Layer import Layer, LayerTrainable
+from Layer import LayerTrainable
+
 
 class LayeredModel(object):
 
@@ -10,8 +11,9 @@ class LayeredModel(object):
         """
         assert len(layers) > 0, "Model layers must be non-empty"
 
-        # check that the output of each layer is the same size as the input of the next layer
-        for l1,l2 in zip(layers[:-1],layers[1:]):
+        # check that the output of each layer is the same size as the input of
+        # the next layer
+        for l1, l2 in zip(layers[:-1], layers[1:]):
             assert l1.output_size == l2.input_size, "layers do not match input to output in the model"
 
         self.layers = layers
@@ -32,7 +34,7 @@ class LayeredModel(object):
             f_layers = self.layers[:end_layer]
 
         for l in f_layers:
-            x = np.array(l.forward(x)) 
+            x = np.array(l.forward(x))
 
         return x
 
@@ -54,9 +56,9 @@ class LayeredModel(object):
             _ = self.forward(x, len(self.layers)-1)
 
         # training stage
-        y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0], 
-                                self.layers[-1].input_size))
-        for idx,x in enumerate(X[warmup_timesteps:]):
+        y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0],
+                              self.layers[-1].input_size))
+        for idx, x in enumerate(X[warmup_timesteps:]):
             # some function that allows us to display
             self.display()
 
@@ -69,7 +71,7 @@ class LayeredModel(object):
 
     def generate(self, x_data, count, reset_increment=-1):
         """
-        Given a single datapoint, the model will feed this back into itself 
+        Given a single datapoint, the model will feed this back into itself
         to produce generative output data.
 
         x_data          : data to generate from (the first data point will be used unless reset_increment != -1)
@@ -103,8 +105,3 @@ class LayeredModel(object):
 
     def display(self):
         pass
-    
-        
-
-
-
