@@ -1,18 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from collections import deque # for deque
-
 import datetime
 
 # Global variables
-    # speed
+# speed
 move_speed = 0.008
 
-    # mackey glass params
+# mackey glass params
 sigma = 10.0
 phi = 28.0
 beta = 8./3.
+
 
 def runLorenz(num_data_samples=5000):
         # move data
@@ -51,11 +50,11 @@ def runLorenz(num_data_samples=5000):
 
     #     sample_timer += 1
 
-    #------ better version on wikipedia which just solves the ODE----
+    # ------ better version on wikipedia which just solves the ODE----
     import numpy as np
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     from scipy.integrate import odeint
-    from mpl_toolkits.mplot3d import Axes3D
+    # from mpl_toolkits.mplot3d import Axes3D
 
     rho = 28.0
     sigma = 10.0
@@ -63,7 +62,8 @@ def runLorenz(num_data_samples=5000):
 
     def f(state, t):
         x, y, z = state  # unpack the state vector
-        return sigma * (y - x), x * (rho - z) - y, x * y - beta * z  # derivatives
+        # derivatives
+        return sigma * (y - x), x * (rho - z) - y, x * y - beta * z
 
     delta_t = 0.01
     t_end = num_data_samples * delta_t
@@ -74,9 +74,11 @@ def runLorenz(num_data_samples=5000):
 
     return states
 
+
 def onExit(data, axis1=0, axis2=2):
     # save the data
-    np.savetxt("data_{}.txt".format(datetime.date.today()), data, delimiter=",")
+    np.savetxt("data_{}.txt".format(datetime.date.today()), data,
+               delimiter=",")
 
     # plot the data
     plt.plot(data[:, axis1], data[:, axis2], linewidth=0.4)
@@ -84,14 +86,18 @@ def onExit(data, axis1=0, axis2=2):
     plt.ylabel("{}".format(axis2))
     plt.show()
 
+    
 def d_x(x_t, y_t, z_t):
     return sigma * (y_t - x_t)
+
 
 def d_y(x_t, y_t, z_t):
     return x_t * (phi - z_t) - y_t
 
+
 def d_z(x_t, y_t, z_t):
     return x_t * y_t - beta * z_t
+
 
 if __name__ == "__main__":
     data = runLorenz(num_data_samples=20000)

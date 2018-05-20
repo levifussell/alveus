@@ -1,19 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-from collections import deque # for deque
-
+from collections import deque
 import datetime
 
 # Global variables
-    # speed
-move_speed = 1.0 
+# speed
+move_speed = 1.0
 
-    # mackey glass params
+# mackey glass params
 gamma = 0.1
 beta = 0.2
-tau = 17 
+tau = 17
 en = 10.
+
 
 def run(num_data_samples=5000, init_x=1.0, init_x_tau=0.0):
     x_history = deque(maxlen=tau)
@@ -40,7 +39,7 @@ def run(num_data_samples=5000, init_x=1.0, init_x_tau=0.0):
             data_samples.append(x_pos)
             current_sample += 1
             if current_sample >= num_data_samples:
-                #print("DONE")
+                # print("DONE")
                 return data_samples
 
         # record move history
@@ -48,10 +47,12 @@ def run(num_data_samples=5000, init_x=1.0, init_x_tau=0.0):
 
         sample_timer += 1
 
+
 def onExit(data, plot2d=False):
     # save the data
     data_np = np.asarray(data)
-    np.savetxt("data_{}.txt".format(datetime.date.today()), data_np, delimiter=",")
+    np.savetxt("data_{}.txt".format(datetime.date.today()), data_np,
+               delimiter=",")
 
     # plot the data
     if plot2d:
@@ -65,8 +66,10 @@ def onExit(data, plot2d=False):
         plt.plot(range(len(data)), data)
         plt.show()
 
+
 def d_x(x_t, x_t_tau):
     return beta * (x_t_tau/(1.+pow(x_t_tau, en))) - gamma * x_t
+
 
 if __name__ == "__main__":
     data = run(num_data_samples=8000)
