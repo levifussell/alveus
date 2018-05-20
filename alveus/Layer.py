@@ -1,11 +1,10 @@
 import numpy as np
 
+
 class Layer(object):
     """
     Abstract class representing a layer for a feedforward model.
     """
-
-
     def __init__(self, input_size, output_size):
         """
         input_size      : size of the input data to this layer
@@ -20,6 +19,7 @@ class Layer(object):
         """
         x = x.squeeze()
         assert (self.input_size == 1 and x.shape == ()) or len(x) == self.input_size, "unexpected input dimensionality of {}, expected: {}".format(np.shape(x), self.input_size)
+
 
 class LayerTrainable(Layer):
     """
