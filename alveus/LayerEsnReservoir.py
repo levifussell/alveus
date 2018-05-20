@@ -1,8 +1,5 @@
 import numpy as np
 import numpy.linalg as la
-import pickle as pkl
-import time
-import matplotlib.pyplot as plt
 
 from LayerReservoir import LayerReservoir
 
@@ -10,7 +7,7 @@ from LayerReservoir import LayerReservoir
 Notes (from scholarpedia):
     -The SPECTRAL RADIUS of the reservoir weights codetermines:
         (1): (?)
-        (2): amount of nonlinear interaction of input components through time 
+        (2): amount of nonlinear interaction of input components through time
                 (larger spectral radius ==> longer-range interactions)
     -INPUT SCALING codetermines the degree of nonlinearity of the reservoir dynamics. Examples:
         (1): very small input amplitudes ==> reservoir behaves almost like linear medium.
@@ -23,6 +20,7 @@ Notes (from scholarpedia):
     -CONNECTIVITY/SPARSITY of reservoir weight matrix:
         (1) todo
 """
+
 
 class LayerEsnReservoir(LayerReservoir):
     """
@@ -37,12 +35,14 @@ class LayerEsnReservoir(LayerReservoir):
 
     """
 
-    def __init__(self, input_size, num_units, echo_param=0.6, idx=None, activation=np.tanh, 
-                    debug=False):
-        super(LayerEsnReservoir, self).__init__(input_size, num_units+input_size, num_units)
+    def __init__(self, input_size, num_units, echo_param=0.6, idx=None,
+                 activation=np.tanh, debug=False):
+        super(LayerEsnReservoir, self).__init__(input_size,
+                                                num_units+input_size,
+                                                num_units)
         self.echo_param = echo_param
         self.activation = activation
-        self.idx = idx                # <- can assign reservoir a unique ID for debugging
+        self.idx = idx  # <- can assign reservoir a unique ID for debugging
         self.debug = debug
 
         # input-to-reservoir, reservoir-to-reservoir weights (not yet initialized)
@@ -54,14 +54,15 @@ class LayerEsnReservoir(LayerReservoir):
         # and initialize_reservoir_weights().
         self.spectral_scale = None
         self.sparsity = None
-        self.W_res_init_strategy = None 
+        self.W_res_init_strategy = None
         self.sparsity = None
 
         # helpful information to track
-        #if self.debug:
-        self.signals = [] # <- reservoir states over time during training
+        # if self.debug:
+        self.signals = []  # <- reservoir states over time during training
         self.num_to_store = 50
-        self.ins_init = False; self.res_init = False
+        self.ins_init = False
+        self.res_init = False
 
     def info(self):
         """
@@ -74,8 +75,8 @@ class LayerEsnReservoir(LayerReservoir):
         out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
     def initialize_reservoir(self, strategy='uniform', **kwargs):
-                                     #spectral_scale=1.0, offset=0.5, 
-                                     #sparsity=1.0):
+        # spectral_scale=1.0, offset=0.5,
+        # sparsity=1.0):
         # super(LayerEsnReservoir, self).initialize_reservoir(strategy, kwargs)
         if 'spectral_scale' not in kwargs.keys():
             self.spectral_scale = 1.0
@@ -103,7 +104,8 @@ class LayerEsnReservoir(LayerReservoir):
         elif self.W_res_init_strategy == 'gaussian':
             self.W_res = np.random.randn(self.num_units, self.num_units)
         else:
-            raise ValueError('unknown res. weight init strategy %s' % self.W_res_init_strategy)
+            raise ValueError('unknown res. weight init strategy %s' %
+                             self.W_res_init_strategy)
 
         # apply the sparsity
         # self.sparsity = sparsity
@@ -140,7 +142,7 @@ class LayerEsnReservoir(LayerReservoir):
 
         # Equation (1) in "Formalism and Theory" of Scholarpedia page
         self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)
-        #if self.debug:
+        # if self.debug:
         self.signals.append(self.state[:self.num_to_store].tolist())
 
         # return the reservoir state appended to the input
