@@ -1,20 +1,18 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from LayerSandPileReservoir import LayerSandPileReservoir
 from LayerLinearRegression import LayerLinearRegression
 from LayeredModel import LayeredModel
 
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-import time
 
 class SandPileModel(LayeredModel):
 
-    def __init__(self, input_size, output_size, reservoir_size, 
-                    # spectral_scale=0.29401253252, thresh_scale=1.1142252352,
-                    spectral_scale=0.2, thresh_scale=3.0,
-                    input_weight_scale=0.01, regulariser=1e-6):
+    def __init__(self, input_size, output_size, reservoir_size,
+                 # spectral_scale=0.29401253252, thresh_scale=1.1142252352,
+                 spectral_scale=0.2, thresh_scale=3.0,
+                 input_weight_scale=0.01, regulariser=1e-6):
         """
         input_size          : input dimension of the data
         output_size         : output dimension of the data
@@ -74,4 +72,3 @@ class SandPileModel(LayeredModel):
     #         # redraw the figure
     #         self.live_fig.canvas.draw()
     #         plt.pause(0.001)
-
