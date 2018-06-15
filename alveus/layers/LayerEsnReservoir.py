@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.linalg as la
 
-from LayerReservoir import LayerReservoir
+from .LayerReservoir import LayerReservoir
 
 """
 Notes (from scholarpedia):

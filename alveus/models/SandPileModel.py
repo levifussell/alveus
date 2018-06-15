@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from LayerSandPileReservoir import LayerSandPileReservoir
-from LayerLinearRegression import LayerLinearRegression
-from LayeredModel import LayeredModel
+from ..layers.LayerSandPileReservoir import LayerSandPileReservoir
+from ..layers.LayerLinearRegression import LayerLinearRegression
+from .LayeredModel import LayeredModel
 
 
 class SandPileModel(LayeredModel):

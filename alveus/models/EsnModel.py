@@ -1,6 +1,6 @@
-from LayerEsnReservoir import LayerEsnReservoir
-from LayerLinearRegression import LayerLinearRegression
-from LayeredModel import LayeredModel
+from ..layers.LayerEsnReservoir import LayerEsnReservoir
+from ..layers.LayerLinearRegression import LayerLinearRegression
+from .LayeredModel import LayeredModel
 
 
 class EsnModel(LayeredModel):

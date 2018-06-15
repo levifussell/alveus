@@ -1,6 +1,6 @@
 import numpy as np
 
-from Layer import LayerTrainable
+from ..layers.Layer import LayerTrainable
 
 
 class LayeredModel(object):

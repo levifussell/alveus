@@ -1,6 +1,6 @@
 import numpy as np
 
-from LayerReservoir import LayerReservoir
+from .LayerReservoir import LayerReservoir
 
 """
 Notes (from scholarpedia):

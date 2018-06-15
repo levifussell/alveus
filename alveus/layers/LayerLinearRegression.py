@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.linalg as la
 
-from Layer import LayerTrainable
+from .Layer import LayerTrainable
 
 
 class LayerLinearRegression(LayerTrainable):

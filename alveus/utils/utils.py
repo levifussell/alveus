@@ -41,7 +41,7 @@ class LiveDataGraph:
         plt.show(block=False)
         plt.pause(0.001)
 
-        
+
 class LivePlotHistogram:
 
     def __init__(self, data_functions, names, update_rate=1, barCount=50,

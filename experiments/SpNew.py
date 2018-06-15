@@ -3,13 +3,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy as sp
 
-from data_generator.MackeyGlassGenerator import run
-from data_generator.HenonGenerator import runHenon
-from SandPileModel import SandPileModel
-from utils.metrics import nrmse
-
 from sys import path
-path.insert(0, '../alveus/')
+path.insert(0, '/home/thais/dev/alveus/')  # needed to import alveus
+from alveus.data.generators.MackeyGlassGenerator import run
+from alveus.data.generators.HenonGenerator import runHenon
+from alveus.models.SandPileModel import SandPileModel
+from alveus.utils.metrics import nrmse
 
 if __name__ == "__main__":
     data = np.array([run(6100)]).reshape(-1, 1)

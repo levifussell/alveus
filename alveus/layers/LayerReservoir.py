@@ -1,6 +1,6 @@
 import numpy as np
 
-from Layer import Layer
+from .Layer import Layer
 
 """
 Notes (from scholarpedia):
