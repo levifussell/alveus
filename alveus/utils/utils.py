@@ -10,7 +10,7 @@ def mse(y_true, y_pred):
 def nrmse(y_true, y_pred, MEAN_OF_DATA):
     y_true = y_true.squeeze()
     y_pred = y_pred.squeeze()
-    return np.sqrt(np.sum((y_true - y_pred)**2)/np.sum((y_true - MEAN_OF_DATA)**2))
+    return np.sqrt(np.sum((y_true - y_pred)**2)/np.sum((y_true - MEAN_OF_DATA)**2 + 0.000001))
 
 
 class LiveDataGraph:

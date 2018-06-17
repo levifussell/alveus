@@ -5,6 +5,7 @@ import scipy as sp
 
 from sys import path
 path.insert(0, '/home/thais/dev/alveus/')  # needed to import alveus
+path.insert(0, '/home/oem/Documents/Code/2018/Projects/ESN/alveus/')  # needed to import alveus
 from alveus.data.generators.MackeyGlassGenerator import run
 from alveus.data.generators.HenonGenerator import runHenon
 from alveus.models.SandPileModel import SandPileModel

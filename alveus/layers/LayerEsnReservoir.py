@@ -85,7 +85,7 @@ class LayerEsnReservoir(LayerReservoir):
         else:
             self.sparsity = kwargs['sparsity']
         if 'offset' not in kwargs.keys():
-            offset = 1.0
+            offset = 0.5
         else:
             offset = kwargs['offset']
 
