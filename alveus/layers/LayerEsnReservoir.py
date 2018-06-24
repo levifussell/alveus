@@ -86,7 +86,7 @@ class LayerEsnReservoir(LayerReservoir):
             self.W_res_init_strategy = 'uniform'
         else:
             self.W_res_init_strategy = kwargs['strategy']
-        if 'sparsiy' not in kwargs.keys():
+        if 'sparsity' not in kwargs.keys():
             self.sparsity = 1.0
         else:
             self.sparsity = kwargs['sparsity']
