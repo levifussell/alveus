@@ -25,11 +25,6 @@ class LiveDataGraph:
         self.animation = FuncAnimation(self.figure, self.__update__,
                                        interval=self.update_rate)
 
-        # start the graphing process in a new thread
-        # t = threading.Thread(target=self.__run__)
-        # t.start()
-        # self.__run__()
-
     def __update__(self, frame):
         x_data, y_data = self.data_function()
         self.line.set_data(x_data, y_data)
@@ -43,7 +38,6 @@ class LiveDataGraph:
 
 
 class LivePlotHistogram:
-
     def __init__(self, data_functions, names, update_rate=1, barCount=50,
                  title=""):
         self.data_functions = data_functions
@@ -61,17 +55,11 @@ class LivePlotHistogram:
         self.timestep = 0
 
     def __update__(self):
-        # if self.timestep > 0:
-            # self.figure.clf()
-            # # self.figure.suptitle(self.title)
-            # self.figure.gca().autoscale_view()
-
         self.centres = []
         self.widths = []
         self.hists = []
         for i in self.data_functions:
             y_data = i()
-            # print(y_data)
             h, bars = np.histogram(y_data, bins=self.barCount)
             c = (bars[1:] + bars[:-1]) / 2.0
             w = (bars[0] - bars[1]) * 0.8
@@ -82,14 +70,11 @@ class LivePlotHistogram:
     def run(self):
         if self.timestep % self.update_rate == 0:
             self.__update__()
-            # idx = 0
             for idx, (h, c, w) in enumerate(zip(self.hists, self.centres,
                                                 self.widths)):
-                # print(idx)
                 self.axs[idx].clear()
                 self.axs[idx].bar(c, h, width=w)
                 self.axs[idx].set_title(self.names[idx])
-                # self.axs[idx].plot(range(0, 100), range(0, 100))
 
             plt.show(block=False)
             plt.pause(0.001)

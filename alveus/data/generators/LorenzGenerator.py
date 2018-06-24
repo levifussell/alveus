@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.integrate import odeint
 
 import datetime
 
@@ -14,48 +15,7 @@ beta = 8./3.
 
 
 def runLorenz(num_data_samples=5000):
-        # move data
-    # x_pos = 0.2
-    # y_pos = 0.2
-    # z_pos = 0.2
-
-    #     # record timesteps
-    # sample_timer = 0
-
-    #     # sample for training
-    # #num_data_samples = 5000
-    # current_sample = 0
-    # data_samples = np.zeros((num_data_samples, 3))
-
-    # init_period = 300
-
-    # while True:
-
-    #     x_next = x_pos + move_speed * d_x(x_pos, y_pos, z_pos)
-    #     y_next = y_pos + move_speed * d_y(x_pos, y_pos, z_pos)
-    #     z_next = z_pos + move_speed * d_z(x_pos, y_pos, z_pos)
-    #     x_pos = x_next
-    #     y_pos = y_next
-    #     z_pos = z_next
-
-    #     # store data
-    #     if sample_timer > init_period:
-    #         data_samples[current_sample, 0] = x_pos
-    #         data_samples[current_sample, 1] = y_pos
-    #         data_samples[current_sample, 2] = z_pos
-    #         current_sample += 1
-    #         if current_sample >= num_data_samples:
-    #             print("DONE")
-    #             return data_samples
-
-    #     sample_timer += 1
-
     # ------ better version on wikipedia which just solves the ODE----
-    import numpy as np
-    # import matplotlib.pyplot as plt
-    from scipy.integrate import odeint
-    # from mpl_toolkits.mplot3d import Axes3D
-
     rho = 28.0
     sigma = 10.0
     beta = 8.0 / 3.0
@@ -86,7 +46,7 @@ def onExit(data, axis1=0, axis2=2):
     plt.ylabel("{}".format(axis2))
     plt.show()
 
-    
+
 def d_x(x_t, y_t, z_t):
     return sigma * (y_t - x_t)
 

@@ -13,8 +13,6 @@ def runHenon(num_data_samples=5000, dimensions=1):
     assert dimensions == 1 or dimensions == 2, "HENON MAP CAN ONLY be 1D or 2D"
 
     # move data
-    # x_t = 0.1
-    # y_t = 0.3
     x_t = 0.0
     y_t = 0.0
 
@@ -22,7 +20,6 @@ def runHenon(num_data_samples=5000, dimensions=1):
     sample_timer = 0
 
     # sample for training
-    # num_data_samples = 5000
     current_sample = 0
 
     data_samples = np.zeros((num_data_samples, dimensions))
@@ -30,7 +27,6 @@ def runHenon(num_data_samples=5000, dimensions=1):
     init_period = 2000
 
     while True:
-
         if dimensions == 1:
             x_t_next = x_t_plus_one_1d(x_t, y_t)
             y_t = x_t

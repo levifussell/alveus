@@ -46,7 +46,7 @@ class LayeredModel(object):
         """
         assert isinstance(self.layers[-1], LayerTrainable), "This model cannot be trained because the final layer of type {} is not trainable".format(type(self.layers[-1]))
 
-        #############TODO: for now we assume ONLY the last layer can be trained
+        # TODO: for now we assume ONLY the last layer can be trained
 
         # warmup stage
         for x in X[:warmup_timesteps]:
@@ -96,7 +96,6 @@ class LayeredModel(object):
 
         return np.array(y_outputs).squeeze()
 
-    # TODO: below needs to be refactored to the pep18 style
     def get_output_size(self):
         return self.layers[-1].output_size
 

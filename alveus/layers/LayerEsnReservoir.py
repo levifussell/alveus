@@ -32,7 +32,6 @@ class LayerEsnReservoir(LayerReservoir):
     activation  :    activation function of the reservoir units (default=tanh)
     debug       :    when True, this will print live information (default=False)
     (description): reservoir class. Extend this class to create different reservoirs
-
     """
 
     def __init__(self, input_size, num_units, echo_param=0.6, idx=None,
@@ -46,7 +45,6 @@ class LayerEsnReservoir(LayerReservoir):
         self.debug = debug
 
         # input-to-reservoir, reservoir-to-reservoir weights (not yet initialized)
-        # self.W_in = np.zeros((self.num_units, self.input_size))
         self.W_res = np.zeros((self.num_units, self.num_units))
         self.state = np.zeros(self.num_units)            # <- unit states
 
@@ -58,7 +56,6 @@ class LayerEsnReservoir(LayerReservoir):
         self.sparsity = None
 
         # helpful information to track
-        # if self.debug:
         self.signals = []  # <- reservoir states over time during training
         self.num_to_store = 50
         self.ins_init = False
@@ -75,9 +72,6 @@ class LayerEsnReservoir(LayerReservoir):
         out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
 
     def initialize_reservoir(self, strategy='uniform', **kwargs):
-        # spectral_scale=1.0, offset=0.5,
-        # sparsity=1.0):
-        # super(LayerEsnReservoir, self).initialize_reservoir(strategy, kwargs)
         if 'spectral_scale' not in kwargs.keys():
             self.spectral_scale = 1.0
         else:
@@ -94,9 +88,7 @@ class LayerEsnReservoir(LayerReservoir):
             offset = 1.0
         else:
             offset = kwargs['offset']
-        # self.spectral_scale = spectral_scale
-        # self.W_res_init_strategy = strategy
-        # self.sparsity = sparsity
+
         if self.W_res_init_strategy == 'binary':
             self.W_res = (np.random.rand(self.num_units, self.num_units) > 0.5).astype(float)
         elif self.W_res_init_strategy == 'uniform':
@@ -108,7 +100,6 @@ class LayerEsnReservoir(LayerReservoir):
                              self.W_res_init_strategy)
 
         # apply the sparsity
-        # self.sparsity = sparsity
         sparsity_matrix = (np.random.rand(self.num_units, self.num_units) < self.sparsity).astype(float)
 
         self.W_res -= offset
@@ -124,16 +115,6 @@ class LayerEsnReservoir(LayerReservoir):
         x: input_size-dimensional input vector
         """
         super(LayerEsnReservoir, self).forward(x)
-
-        # x = x.squeeze()
-        # try:
-        #     assert (self.input_size == 1 and x.shape == ()) or x.shape[0] == self.W_in.shape[1], \
-        #         "u(n): %s.  W_res: %s (ID=%d)" % (x.shape, self.W_res.shape, self.idx)
-        # except:
-        #     print(x.shape)
-        #     print(self.W_in.shape)
-        #     print(self.W_res.shape)
-        #     raise
         assert self.ins_init, "Res. input weights not yet initialized (ID=%d)." % self.idx
         assert self.res_init, "Res. recurrent weights not yet initialized (ID=%d)." % self.idx
 
@@ -142,7 +123,6 @@ class LayerEsnReservoir(LayerReservoir):
 
         # Equation (1) in "Formalism and Theory" of Scholarpedia page
         self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)
-        # if self.debug:
         self.signals.append(self.state[:self.num_to_store].tolist())
 
         # return the reservoir state appended to the input
