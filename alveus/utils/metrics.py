@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics.pairwise import rbf_kernel
 
 
 def mse(y_true, y_pred):
@@ -22,3 +23,15 @@ def nrmse(y_true, y_pred, MEAN_OF_DATA):
     errors = np.sum(np.square(y_true - y_pred))
 
     return np.sqrt(errors / std)
+
+
+def gaussian_kernel(X, Y, sigma):
+    return np.sum(rbf_kernel(X, Y, gamma=sigma), axis=0)
+
+
+def MMD(X, Y, kernel=gaussian_kernel, sigma=[None, None, None]):
+    xx = kernel(X, X, sigma[0])
+    xy = kernel(X, Y, sigma[1])
+    yy = kernel(Y, Y, sigma[2])
+    mmd = np.mean(xx) - 2*np.mean(xy) + np.mean(yy)
+    return np.sqrt(mmd)
