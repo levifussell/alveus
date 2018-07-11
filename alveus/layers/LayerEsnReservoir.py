@@ -123,7 +123,7 @@ class LayerEsnReservoir(LayerReservoir):
 
         # Equation (1) in "Formalism and Theory" of Scholarpedia page
         self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)
-        self.signals.append(self.state[:self.num_to_store].tolist())
+        # self.signals.append(self.state[:self.num_to_store].tolist())
 
         # return the reservoir state appended to the input
         output = np.hstack((self.state.squeeze(), x))
