@@ -18,9 +18,13 @@ class LayeredModel(object):
 
         self.layers = layers
 
+    def reset(self):
+        for l in self.layers:
+            l.reset()
+
     def forward(self, x, end_layer=None):
         """
-        x           : data to be trained on
+        x           : data to push through the network
         end_layer   : the layer to stop the forward movement of the data. Used for training. (default=None)
         """
         x = x.squeeze()
@@ -33,12 +37,15 @@ class LayeredModel(object):
         else:
             f_layers = self.layers[:end_layer]
 
+        # for l in f_layers:
+        #     x = np.array(l.forward(x))
+
         for l in f_layers:
-            x = np.array(l.forward(x))
+            x = l.forward(x)
 
         return x
 
-    def train(self, X, y, warmup_timesteps=100):
+    def train(self, X, y, warmup_timesteps=100, data_repeats=1):
         """
         x                   : input data to train on
         y                   : output data to train on
@@ -49,23 +56,59 @@ class LayeredModel(object):
         # TODO: for now we assume ONLY the last layer can be trained
 
         # warmup stage
-        for x in X[:warmup_timesteps]:
+        # for x in X[:warmup_timesteps]:
+        #     # some function that allows us to display
+        #     self.display()
+
+        #     _ = self.forward(x, len(self.layers)-1)
+
+        # # training stage
+        # y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0],
+        #                       self.layers[-1].input_size))
+        # for idx, x in enumerate(X[warmup_timesteps:]):
+        #     # some function that allows us to display
+        #     self.display()
+
+        #     y_p = self.forward(x, len(self.layers)-1)
+        #     y_forward[idx, :] = y_p
+
+        # y_nonwarmup = y[warmup_timesteps:]
+        y_forward = np.zeros((np.shape(X)[0] - data_repeats*warmup_timesteps,
+                              self.layers[-1].input_size)) 
+        y_nonwarmup = np.zeros((np.shape(y)[0] - data_repeats*warmup_timesteps,
+                                np.shape(y)[1]))
+        y_idx = 0
+        data_rate = np.shape(X)[0] / data_repeats
+        # print(data_rate)
+        # print(X[:10])
+        # print(X[data_rate:(data_rate+10)])
+        for idx,x in enumerate(X):
             # some function that allows us to display
             self.display()
 
-            _ = self.forward(x, len(self.layers)-1)
+            # if idx % data_rate == 0:
+            #     print(x)
+            #     self.reset()
+            
+            if idx % data_rate < warmup_timesteps:
+                _ = self.forward(x, len(self.layers)-1)
+            else:
+                y_p = self.forward(x, len(self.layers)-1)
+                y_forward[y_idx, :] = y_p
+                y_nonwarmup[y_idx, :] = y[idx, :]
+                y_idx += 1
 
         # training stage
-        y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0],
-                              self.layers[-1].input_size))
-        for idx, x in enumerate(X[warmup_timesteps:]):
-            # some function that allows us to display
-            self.display()
+        # y_forward = np.zeros((np.shape(X[warmup_timesteps:])[0],
+        #                       self.layers[-1].input_size))
+        # for idx, x in enumerate(X[warmup_timesteps:]):
+        #     # some function that allows us to display
+        #     self.display()
 
-            y_p = self.forward(x, len(self.layers)-1)
-            y_forward[idx, :] = y_p
+        #     y_p = self.forward(x, len(self.layers)-1)
+        #     y_forward[idx, :] = y_p
 
-        y_nonwarmup = y[warmup_timesteps:]
+        # y_nonwarmup = y[warmup_timesteps:]
 
         self.layers[-1].train(y_forward, y_nonwarmup)
 
@@ -78,8 +121,10 @@ class LayeredModel(object):
         count           : number of times to run the generative process
         reset_increment : how often to feed the generator the 'real' data value (default=-1 <= no reset)
         """
-        y_outputs = []
-        x = np.array(x_data[0])
+        # y_outputs = []
+        y_outputs = np.zeros(count)
+        # x = np.array(x_data[0])
+        x = x_data[0]
         for e in range(count):
 
             # some function that allows us to display
@@ -90,11 +135,14 @@ class LayeredModel(object):
                 assert e < len(x_data), "generating data is less than the specified count"
                 x = x_data[e]
 
-            x = np.array(self.forward(x))
-            y_outputs.append(x)
+            # x = np.array(self.forward(x))
+            x = self.forward(x)
+            # y_outputs.append(x)
+            y_outputs[e] = x
             x = np.hstack((x, 1))
 
-        return np.array(y_outputs).squeeze()
+        # return np.array(y_outputs).squeeze()
+        return y_outputs.squeeze()
 
     def get_output_size(self):
         return self.layers[-1].output_size

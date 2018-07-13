@@ -1,6 +1,8 @@
 import numpy as np
 import numpy.linalg as la
 
+from collections import deque
+
 from .LayerReservoir import LayerReservoir
 
 """
@@ -56,7 +58,9 @@ class LayerEsnReservoir(LayerReservoir):
         self.sparsity = None
 
         # helpful information to track
-        self.signals = []  # <- reservoir states over time during training
+        # self.signals = []  # <- reservoir states over time during training
+        self.max_signal_store = 100
+        self.signals = deque(maxlen=self.max_signal_store) #<- reservoir states over time during training
         self.num_to_store = 50
         self.ins_init = False
         self.res_init = False
@@ -108,6 +112,10 @@ class LayerEsnReservoir(LayerReservoir):
         self.W_res *= self.spectral_scale
         self.res_init = True
 
+    def reset(self):
+        super(LayerEsnReservoir, self).reset()
+        self.state = np.zeros(self.num_units) 
+
     def forward(self, x):
         """
         Forward propagate input signal u(n) (at time n) through reservoir.
@@ -118,8 +126,16 @@ class LayerEsnReservoir(LayerReservoir):
         assert self.ins_init, "Res. input weights not yet initialized (ID=%d)." % self.idx
         assert self.res_init, "Res. recurrent weights not yet initialized (ID=%d)." % self.idx
 
+        prob = 0.9
+        # dropped = (np.random.rand(*np.shape(self.W_res)) < prob).astype(float)
+        mask_n = (np.random.rand(self.num_units,1) < prob).astype(float)
+        # print("V", np.repeat(mask_n, self.num_units, axis=1))
+        # print("H", np.repeat(mask_n.T, self.num_units, axis=0))
+        mask_v = np.repeat(mask_n, self.num_units, axis=1)
+        dropped = mask_v * mask_v.T
+
         in_to_res = np.dot(self.W_in, x).squeeze()
-        res_to_res = np.dot(self.state.reshape(1, -1), self.W_res)
+        res_to_res = np.dot(self.state.reshape(1, -1), self.W_res * dropped)
 
         # Equation (1) in "Formalism and Theory" of Scholarpedia page
         self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)

@@ -13,6 +13,9 @@ class Layer(object):
         self.input_size = input_size
         self.output_size = output_size
 
+    def reset(self):
+        pass
+
     def forward(self, x):
         """
         x   : data to feed through the layer

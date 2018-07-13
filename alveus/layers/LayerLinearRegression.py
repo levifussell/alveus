@@ -27,7 +27,8 @@ class LayerLinearRegression(LayerTrainable):
         super(LayerLinearRegression, self).forward(x)
 
         # add the bias
-        x = np.array(np.hstack((x, 1)))
+        # x = np.array(np.hstack((x, 1)))
+        x = np.hstack((x, 1))
 
         # linear forward
         output = np.dot(self.W_out, x)
