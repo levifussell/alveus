@@ -33,7 +33,7 @@ if __name__ == "__main__":
     # compute NRMSE for each timestep
 
 
-    reps = 5
+    reps = 1
     X_train = np.tile(X_train, (reps,1))
     y_train = np.tile(y_train, (reps,1))
 
@@ -41,20 +41,33 @@ if __name__ == "__main__":
     cov = np.zeros((len(y_valid), len(y_valid)))
     for n in range(num):
         # esn = ESN(2, 1, 500, echo_param=0.85, regulariser=1e-6)
-        esn = EsnModel(2, 1, 1000)
+        esn = EsnModel(input_size=2, output_size=1, reservoir_size=1000)
+        # esn.layers[0].drop_probability = 0.1
         # esn = EsnModel(2, 1, 1000,
         #                 spectral_scale=1.0, echo_param=0.85,
         #                 input_weight_scale=1.0, regulariser=1e-5)
-        esn.train(X_train, y_train, data_repeats=reps, warmup_timesteps=100)
+        esn.train(X_train, y_train, data_repeats=reps, warmup_timesteps=300)
+        # j = np.random.randint(1000)
+        # esn.layers[0].W_res[j, j] = 0.0
+        # esn.layers[0].W_res[:, j] = 0.0
+        # esn.layers[0].W_res[j, :] = 0.0
 
         esn_outputs = []
 
+        # esn.layers[0].drop_probability = 0.0
         # generate test-data
         esn_outputs = esn.generate(X_valid, len(y_valid))
+        error_first = nrmse(y_valid, esn_outputs, data_mean)
+        print('ESN NRMSE: %f' % error_first)
+
+        gen_data = np.vstack((X_train[-300:], X_valid))
+        esn_outputs = esn.generate(gen_data, len(y_valid), warmup_timesteps=300)
         n_esn_outputs.append(esn_outputs)
 
         error = nrmse(y_valid, esn_outputs, data_mean)
         print('ESN NRMSE: %f' % error)
+
+        assert np.round(error, 3) == np.round(error_first, 3), "errors after warm-up and generation must be the same"
 
         for i in range(len(y_valid)):
             y_valid_slice = y_valid[:i]

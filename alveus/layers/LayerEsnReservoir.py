@@ -65,6 +65,12 @@ class LayerEsnReservoir(LayerReservoir):
         self.ins_init = False
         self.res_init = False
 
+        self.drop_probability = 0.5
+
+        self.prev_in_to_res = None
+        self.prev_res_to_res = None
+        self.prev_sate = None
+
     def info(self):
         """
         (args): None
@@ -126,19 +132,22 @@ class LayerEsnReservoir(LayerReservoir):
         assert self.ins_init, "Res. input weights not yet initialized (ID=%d)." % self.idx
         assert self.res_init, "Res. recurrent weights not yet initialized (ID=%d)." % self.idx
 
-        prob = 0.9
+        # prob =
         # dropped = (np.random.rand(*np.shape(self.W_res)) < prob).astype(float)
-        mask_n = (np.random.rand(self.num_units,1) < prob).astype(float)
+        # mask_n = (np.random.rand(self.num_units,1) > self.drop_probability).astype(float)
         # print("V", np.repeat(mask_n, self.num_units, axis=1))
         # print("H", np.repeat(mask_n.T, self.num_units, axis=0))
-        mask_v = np.repeat(mask_n, self.num_units, axis=1)
-        dropped = mask_v * mask_v.T
+        # mask_v = np.repeat(mask_n, self.num_units, axis=1)
+        # dropped = mask_v * mask_v.T
 
         in_to_res = np.dot(self.W_in, x).squeeze()
-        res_to_res = np.dot(self.state.reshape(1, -1), self.W_res * dropped)
+        self.prev_in_to_res = np.copy(in_to_res)
+        res_to_res = np.dot(self.state.reshape(1, -1), self.W_res)
+        self.prev_res_to_res = np.copy(res_to_res)
 
         # Equation (1) in "Formalism and Theory" of Scholarpedia page
-        self.state = (1. - self.echo_param) * self.state + self.echo_param * self.activation(in_to_res + res_to_res)
+        self.prev_state = np.copy(self.state)
+        self.state = (1. - self.echo_param) * self.state  + self.echo_param * self.activation(in_to_res + res_to_res)
         # self.signals.append(self.state[:self.num_to_store].tolist())
 
         # return the reservoir state appended to the input

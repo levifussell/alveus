@@ -112,7 +112,7 @@ class LayeredModel(object):
 
         self.layers[-1].train(y_forward, y_nonwarmup)
 
-    def generate(self, x_data, count, reset_increment=-1):
+    def generate(self, x_data, count, reset_increment=-1, warmup_timesteps=0):
         """
         Given a single datapoint, the model will feed this back into itself
         to produce generative output data.
@@ -125,21 +125,24 @@ class LayeredModel(object):
         y_outputs = np.zeros(count)
         # x = np.array(x_data[0])
         x = x_data[0]
-        for e in range(count):
+        for e in range(-warmup_timesteps, count, 1):
 
             # some function that allows us to display
             self.display()
 
-            # if we enable reseting, feed the 'real' data in
-            if reset_increment != -1 and e % reset_increment == 0:
+            # if we enable reseting, feed the 'real' data in (e == 0) is for warm-up swap
+            if e == 0 or (reset_increment != -1 and e % reset_increment == 0):
                 assert e < len(x_data), "generating data is less than the specified count"
-                x = x_data[e]
+                x = x_data[e + warmup_timesteps]
 
-            # x = np.array(self.forward(x))
-            x = self.forward(x)
-            # y_outputs.append(x)
-            y_outputs[e] = x
-            x = np.hstack((x, 1))
+            # forward generating without 'warmup'
+            if e >= 0:
+                x = self.forward(x)
+                y_outputs[e] = x
+                x = np.hstack((x, 1))
+            # forward generating with 'warmup'
+            else:
+                _ = self.forward(x_data[e + warmup_timesteps])
 
         # return np.array(y_outputs).squeeze()
         return y_outputs.squeeze()

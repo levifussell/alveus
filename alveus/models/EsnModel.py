@@ -2,12 +2,14 @@ from ..layers.LayerEsnReservoir import LayerEsnReservoir
 from ..layers.LayerLinearRegression import LayerLinearRegression
 from .LayeredModel import LayeredModel
 
+import numpy as np
 
 class EsnModel(LayeredModel):
 
     def __init__(self, input_size, output_size, reservoir_size,
                  spectral_scale=1.25, echo_param=0.85,
-                 input_weight_scale=1.0, regulariser=1e-5):
+                 input_weight_scale=1.0, regulariser=1e-5, sparsity=1.0,
+                 res_initialise_strategy='uniform'):
         """
         input_size          : input dimension of the data
         output_size         : output dimension of the data
@@ -19,10 +21,10 @@ class EsnModel(LayeredModel):
         regulariser         : regularisation parameter for the linear
                               regression output
         """
-        layer_res = LayerEsnReservoir(input_size, reservoir_size, echo_param)
+        layer_res = LayerEsnReservoir(input_size, reservoir_size, echo_param, activation=np.tanh)#activation=(lambda x : (x > 0).astype(float)*x))
         layer_res.initialize_input_weights(scale=input_weight_scale,
-                                           strategy="uniform")
-        layer_res.initialize_reservoir(spectral_scale=spectral_scale)
+                                           strategy=res_initialise_strategy)
+        layer_res.initialize_reservoir(spectral_scale=spectral_scale, sparsity=sparsity)
         layer_lr = LayerLinearRegression(reservoir_size+input_size,
                                          output_size, regulariser=regulariser)
         layers = [layer_res, layer_lr]
