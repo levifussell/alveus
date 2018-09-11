@@ -21,7 +21,8 @@ class EsnModel(LayeredModel):
         regulariser         : regularisation parameter for the linear
                               regression output
         """
-        layer_res = LayerEsnReservoir(input_size, reservoir_size, echo_param, activation=np.tanh)#activation=(lambda x : (x > 0).astype(float)*x))
+        layer_res = LayerEsnReservoir(input_size, reservoir_size, 
+                                    output_size=reservoir_size+input_size, echo_param=echo_param, activation=np.tanh)#activation=(lambda x : (x > 0).astype(float)*x))
         layer_res.initialize_input_weights(scale=input_weight_scale,
                                            strategy=res_initialise_strategy)
         layer_res.initialize_reservoir(spectral_scale=spectral_scale, sparsity=sparsity)
@@ -30,3 +31,18 @@ class EsnModel(LayeredModel):
         layers = [layer_res, layer_lr]
 
         super(EsnModel, self).__init__(layers)
+
+    def forward(self, x, end_layer=None):
+
+        # if doing the full feedforward, override the last reservoir to append the input
+        if end_layer is None or end_layer == len(self.layers):
+            y_p = super(EsnModel, self).forward(x=x, end_layer=len(self.layers)-1)
+            y_p = np.hstack((y_p, x))
+            y_p = self.layers[-1].forward(y_p)
+        # if doing only the reservoir feedforward, append the input at the end
+        else:
+            y_p = super(EsnModel, self).forward(x=x, end_layer=end_layer)
+            if end_layer == len(self.layers)-1:
+                y_p = np.hstack((y_p, x))
+
+        return y_p

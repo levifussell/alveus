@@ -36,11 +36,16 @@ class LayerEsnReservoir(LayerReservoir):
     (description): reservoir class. Extend this class to create different reservoirs
     """
 
-    def __init__(self, input_size, num_units, echo_param=0.6, idx=None,
+    def __init__(self, input_size, num_units, output_size=None, echo_param=0.6, idx=None,
                  activation=np.tanh, debug=False):
-        super(LayerEsnReservoir, self).__init__(input_size,
-                                                num_units+input_size,
-                                                num_units)
+        if output_size == None:
+            super(LayerEsnReservoir, self).__init__(input_size,
+                                                    num_units,
+                                                    num_units)
+        else:
+            super(LayerEsnReservoir, self).__init__(input_size,
+                                                    output_size,
+                                                    num_units)
         self.echo_param = echo_param
         self.activation = activation
         self.idx = idx  # <- can assign reservoir a unique ID for debugging
@@ -77,9 +82,10 @@ class LayerEsnReservoir(LayerReservoir):
         (description):
         Print live info about the reservoir
         """
-        out = u'Reservoir(num_units=%d, input_size=%d, \u03B5=%.2f)\n' % (self.num_units, self.input_size, self.echo_param)
+        out = u'Reservoir(num_units=%d, input_size=%d, output_size=%d, \u03B5=%.2f)\n' % (self.num_units, self.input_size, self.output_size, self.echo_param)
         out += 'W_res - spec_scale: %.2f, %s init\n' % (self.spectral_scale, self.W_res_init_strategy)
         out += 'W_in  -      scale: %.2f, %s init' % (self.input_weights_scale, self.W_in_init_strategy)
+        return out
 
     def initialize_reservoir(self, strategy='uniform', **kwargs):
         if 'spectral_scale' not in kwargs.keys():
@@ -150,7 +156,10 @@ class LayerEsnReservoir(LayerReservoir):
         self.state = (1. - self.echo_param) * self.state  + self.echo_param * self.activation(in_to_res + res_to_res)
         # self.signals.append(self.state[:self.num_to_store].tolist())
 
-        # return the reservoir state appended to the input
-        output = np.hstack((self.state.squeeze(), x))
+        #if self.output_size == self.num_units:
+        output = self.state.squeeze()
+        #else:
+            # return the reservoir state appended to the input
+            #output = np.hstack((self.state.squeeze(), x))
 
         return output
