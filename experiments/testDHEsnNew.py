@@ -6,9 +6,10 @@ import scipy as sp
 from sys import path
 path.insert(0, '/home/thais/dev/alveus/')  # needed to import alveus
 path.insert(0, '/home/oem/Documents/Code/2018/Projects/ESN/alveus/')  # needed to import alveus
-#from alveus.data.generators.MackeyGlassGenerator import run
-from alveus.data.generators.HenonGenerator import runHenon
-from alveus.models.DEsnModel import DEsnModel
+from alveus.data.generators.MackeyGlassGenerator import run
+#from alveus.data.generators.HenonGenerator import runHenon
+from alveus.models.DMEsnModel import DMEsnModel
+from alveus.layers.LayerEncoder import LayerPcaEncoder
 from alveus.utils.metrics import nrmse
 
 import pickle as pkl
@@ -19,8 +20,8 @@ if __name__ == "__main__":
         #warm_up_length = 300*num_reservoirs
         #data_size = 21000 #6100
         #train_size = 20000 #5100
-        #data = np.array([run(warm_up_length + data_size)]).reshape(-1, 1)
-        data = np.array([runHenon(warm_up_length + data_size, dimensions=1)]).reshape(-1, 1)
+        data = np.array([run(warm_up_length + data_size)]).reshape(-1, 1)
+        #data = np.array([runHenon(warm_up_length + data_size, dimensions=1)]).reshape(-1, 1)
         # normalising the data seems to stabilise the noise a bit
 
         #data -= np.mean(data)
@@ -47,7 +48,7 @@ if __name__ == "__main__":
 
         return X_train, y_train, X_valid, y_valid, data_mean
 
-    num_reservoirs = 5 #10
+    num_reservoirs = 8 #10
     #data_size = 21000
     #train_size = 20000
     #data_size = 11000
@@ -70,14 +71,16 @@ if __name__ == "__main__":
                     "input_size": 2,
                     "output_size": 1,
                     "num_reservoirs": num_reservoirs,
-                    "reservoir_sizes": [200]*num_reservoirs,
-                    "echo_params": np.linspace(0.95, 0.9, num_reservoirs).tolist(),
-                    "spectral_scales": np.linspace(2.0, 1.0, num_reservoirs).tolist(),
-                    "input_weight_scales": np.linspace(4.0, 4.0, num_reservoirs).tolist(),
+                    "reservoir_sizes": np.linspace(200, 400, num_reservoirs, dtype=int).tolist(),
+                    "echo_params": np.linspace(0.5, 0.1, num_reservoirs).tolist(),
+                    "spectral_scales": np.linspace(0.4, 1.2, num_reservoirs).tolist(),
+                    "input_weight_scales": np.linspace(0.5, 0.5, num_reservoirs).tolist(),
                     "sparsities": np.linspace(1.0, 1.0, num_reservoirs).tolist(), #[0.1]*num_reservoirs,
                     #"sparsities": np.linspace(1.0, 1.0, num_reservoirs).tolist(), #[0.1]*num_reservoirs,
                     "res_initialise_strategies": ['uniform']*num_reservoirs,
-                    "regulariser": 1e-9
+                    "encoder_layers": [LayerPcaEncoder]*(num_reservoirs-1),
+                    "encoder_dimensions": np.linspace(30, 80, num_reservoirs-1, dtype=int).tolist(),
+                    "regulariser": 1e-2
                    }
 
     # grid search data
@@ -89,7 +92,7 @@ if __name__ == "__main__":
             # esn = ESN(2, 1, 500, echo_param=0.85, regulariser=1e-6)
             #esn = EsnModel(input_size=2, output_size=1, reservoir_size=1000)
             #esn = DEsnModel(input_size=2, output_size=1, num_reservoirs=2)
-            esn = DEsnModel(input_size=model_params["input_size"], output_size=model_params["output_size"], 
+            esn = DMEsnModel(input_size=model_params["input_size"], output_size=model_params["output_size"], 
                             num_reservoirs=model_params["num_reservoirs"],
                             reservoir_sizes=model_params["reservoir_sizes"],
                             echo_params=model_params["echo_params"],
@@ -97,6 +100,8 @@ if __name__ == "__main__":
                             input_weight_scales=model_params["input_weight_scales"],
                             sparsities=model_params["sparsities"],
                             res_initialise_strategies=model_params["res_initialise_strategies"],
+                            encoder_layers=model_params["encoder_layers"],
+                            encoder_dimensions=model_params["encoder_dimensions"],
                             regulariser=model_params["regulariser"])
             # esn.layers[0].drop_probability = 0.1
             # esn = EsnModel(2, 1, 1000,
@@ -122,7 +127,7 @@ if __name__ == "__main__":
             n_esn_outputs.append(esn_outputs)
 
             error = nrmse(y_valid, esn_outputs, data_mean)
-            print('ESN NRMSE: %f' % error)
+            print('DMESN NRMSE: %f' % error)
 
             #assert np.round(error, 3) == np.round(error_first, 3), "errors after warm-up and generation must be the same"
 

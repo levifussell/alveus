@@ -28,7 +28,7 @@ def runHenon(num_data_samples=5000, dimensions=1):
 
     while True:
         if dimensions == 1:
-            x_t_next = x_t_plus_one_1d(x_t, y_t)
+            x_t_next = x_t_plus_one_1d(x_t, y_t) #+ np.random.rand()*0.005
             y_t = x_t
             x_t = x_t_next
         elif dimensions == 2:

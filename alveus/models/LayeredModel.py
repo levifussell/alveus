@@ -16,6 +16,8 @@ class LayeredModel(object):
         #for l1, l2 in zip(layers[:-1], layers[1:]):
         #    print(l1.output_size, l2.input_size)
         for l1, l2 in zip(layers[:-1], layers[1:]):
+            #print(l1,l2)
+            #print(l1.output_size,l2.input_size)
             assert l1.output_size == l2.input_size, "layers do not match input to output in the model"
 
         self.layers = layers
