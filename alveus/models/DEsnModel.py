@@ -9,7 +9,8 @@ class DEsnModel(LayeredModel):
     def __init__(self, input_size, output_size, num_reservoirs=1, reservoir_sizes=[1000],
                  spectral_scales=[1.25], echo_params=[0.85],
                  input_weight_scales=[1.0], regulariser=1e-5, sparsities=[1.0],
-                 res_initialise_strategies=['uniform']):
+                 res_initialise_strategies=['uniform'],
+                 activation=np.tanh):
         """
         num_reservoirs       : number of reservoirs
         input_size           : input dimension of the data
@@ -53,7 +54,7 @@ class DEsnModel(LayeredModel):
                 out_size = reservoir_sizes[r]
 
             layer_res = LayerEsnReservoir(input_size=in_size, num_units=reservoir_sizes[r], output_size=out_size,
-                                            echo_param=echo_params[r], activation=np.tanh, idx=r)#activation=(lambda x : (x > 0).astype(float)*x))
+                                            echo_param=echo_params[r], activation=activation, idx=r)#activation=(lambda x : (x > 0).astype(float)*x))
             layer_res.initialize_input_weights(scale=input_weight_scales[r],
                                                strategy=res_initialise_strategies[r])
             layer_res.initialize_reservoir(spectral_scale=spectral_scales[r], sparsity=sparsities[r])

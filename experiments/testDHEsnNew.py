@@ -63,9 +63,9 @@ if __name__ == "__main__":
     _nrmse = np.zeros((num, repeats))
 
     #data_size_query = [6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000, 24000, 26000]
-    data_size_query = [21000]
+    data_size_query = [5000]
     #train_size_query = [5000, 7000, 9000, 11000, 13000, 15000, 17000, 19000, 21000, 23000, 25000]
-    train_size_query = [20000]
+    train_size_query = [4000]
 
     model_params = {
                     "input_size": 2,

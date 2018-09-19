@@ -6,8 +6,8 @@ import scipy as sp
 from sys import path
 path.insert(0, '/home/thais/dev/alveus/')  # needed to import alveus
 path.insert(0, '/home/oem/Documents/Code/2018/Projects/ESN/alveus/')  # needed to import alveus
-#from alveus.data.generators.MackeyGlassGenerator import run
-from alveus.data.generators.HenonGenerator import runHenon
+from alveus.data.generators.MackeyGlassGenerator import run
+#from alveus.data.generators.HenonGenerator import runHenon
 from alveus.models.DEsnModel import DEsnModel
 from alveus.utils.metrics import nrmse
 
@@ -19,8 +19,8 @@ if __name__ == "__main__":
         #warm_up_length = 300*num_reservoirs
         #data_size = 21000 #6100
         #train_size = 20000 #5100
-        #data = np.array([run(warm_up_length + data_size)]).reshape(-1, 1)
-        data = np.array([runHenon(warm_up_length + data_size, dimensions=1)]).reshape(-1, 1)
+        data = np.array([run(warm_up_length + data_size)]).reshape(-1, 1)
+        #data = np.array([runHenon(warm_up_length + data_size, dimensions=1)]).reshape(-1, 1)
         # normalising the data seems to stabilise the noise a bit
 
         #data -= np.mean(data)
