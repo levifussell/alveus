@@ -21,7 +21,9 @@ class EsnModel(LayeredModel):
         input_weight_scale  : how much to scale the input weights by
         regulariser         : regularisation parameter for the linear
                               regression output
+        activation          : activation function of the reservoir
         """
+
         layer_res = LayerEsnReservoir(input_size, reservoir_size, 
                                     output_size=reservoir_size+input_size, echo_param=echo_param, activation=activation)#activation=(lambda x : (x > 0).astype(float)*x))
         layer_res.initialize_input_weights(scale=input_weight_scale,
