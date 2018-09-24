@@ -71,15 +71,15 @@ if __name__ == "__main__":
                     "input_size": 2,
                     "output_size": 1,
                     "num_reservoirs": num_reservoirs,
-                    "reservoir_sizes": np.linspace(200, 400, num_reservoirs, dtype=int).tolist(),
-                    "echo_params": np.linspace(0.5, 0.1, num_reservoirs).tolist(),
-                    "spectral_scales": np.linspace(0.4, 1.2, num_reservoirs).tolist(),
-                    "input_weight_scales": np.linspace(0.5, 0.5, num_reservoirs).tolist(),
-                    "sparsities": np.linspace(1.0, 1.0, num_reservoirs).tolist(), #[0.1]*num_reservoirs,
+                    "reservoir_sizes": [10000,200], #np.linspace(200, 400, num_reservoirs, dtype=int).tolist(),
+                    "echo_params": np.random.rand(2).tolist(),#np.linspace(0.8, 0.1, num_reservoirs).tolist(),
+                    "spectral_scales": np.random.rand(2).tolist(),#np.linspace(1.4, 1.2, num_reservoirs).tolist(),
+                    "input_weight_scales": np.random.rand(2).tolist(),#np.linspace(0.5, 0.5, num_reservoirs).tolist(),
+                    "sparsities": np.random.rand(2).tolist(),#np.linspace(0.1, 1.0, num_reservoirs).tolist(), #[0.1]*num_reservoirs,
                     #"sparsities": np.linspace(1.0, 1.0, num_reservoirs).tolist(), #[0.1]*num_reservoirs,
                     "res_initialise_strategies": ['uniform']*num_reservoirs,
                     "encoder_layers": [LayerVaeEncoder]*(num_reservoirs-1),
-                    "encoder_dimensions": np.linspace(80, 80, num_reservoirs-1, dtype=int).tolist(),
+                    "encoder_dimensions": np.linspace(100, 80, num_reservoirs-1, dtype=int).tolist(),
                     "regulariser": 1e-2
                    }
 
@@ -124,6 +124,11 @@ if __name__ == "__main__":
 
             error = nrmse(y_valid, esn_outputs, data_mean)
             print('DMESN NRMSE: %f' % error)
+
+            # visualise latent output
+            latent_l1 = esn.layers[1].encoder.outputs_hist
+            plt.plot(range(np.shape(latent_l1)[0]), latent_l1)
+            plt.show()
 
             #assert np.round(error, 3) == np.round(error_first, 3), "errors after warm-up and generation must be the same"
 

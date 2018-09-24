@@ -73,20 +73,21 @@ class VAE(nn.Module):
         self.avg_loss_history = []
 
     def encode(self, x):
-        h1 = self.relu(self.fc1(x))
+        h1 = self.tanh(self.fc1(x))
         return self.fc21(h1), self.fc22(h1) # mean and std encoding
 
     def reparameterize(self, mu, logvar):
-        if self.training:
-            # compute Gaussian
-            std = logvar.mul(0.5).exp_()
-            eps = Variable(std.data.new(std.size()).normal_())
-            return eps.mul(std).add_(mu)
-        else:
-            return mu
+        return mu
+        #if self.training:
+        #    # compute Gaussian
+        #    std = logvar.mul(0.5).exp_()
+        #    eps = Variable(std.data.new(std.size()).normal_())
+        #    return eps.mul(std).add_(mu)
+        #else:
+        #    return mu
 
     def decode(self, z):
-        h3 = self.relu(self.fc3(z))
+        h3 = self.tanh(self.fc3(z))
         # return self.sigmoid(self.fc4(h3))
         return self.fc4(h3) # linear ouput for predicting dynamical data
 
@@ -106,7 +107,7 @@ class VAE(nn.Module):
         # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-        return BCE + KLD
+        return BCE #+ KLD
 
     def train_one_epoch(self, epoch_idx, train_data, verbose=False):
         self.train()
@@ -171,12 +172,12 @@ class VAE(nn.Module):
 
         for epoch in range(1, self.epochs + 1):
             # although we are using temporal data, the training data should be shuffled. Perhaps this is why a temporal-VAE may be better. 
-            #train_shuff = train_data[torch.randperm(train_data.shape[0]), :]
+            train_shuff = train_data[torch.randperm(train_data.shape[0]), :]
             # print(train_data[:5, :5])
             # print(train_shuff[:5, :5])
 
-            #self.train_one_epoch(epoch, train_shuff, verbose=verbose)
-            self.train_one_epoch(epoch, train_data, verbose=verbose)
+            self.train_one_epoch(epoch, train_shuff, verbose=verbose)
+            #self.train_one_epoch(epoch, train_data, verbose=verbose)
             if test_data is not None:
                 self.test(epoch, test_data)
             self.sample()

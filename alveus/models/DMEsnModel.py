@@ -142,6 +142,8 @@ class DMEsnModel(LayeredModel):
                 dataset_res_X_new = np.zeros((np.shape(dataset_res_X)[0], self.layers[l].output_size))
                 # fit the encoder
                 #try:
+                #if (self.reuse_encoder):
+                #    self.layers[1].train(dataset_res_X)
                 if (self.reuse_encoder and l == 1) or not self.reuse_encoder:
                     try:
                         self.layers[l].train(dataset_res_X)

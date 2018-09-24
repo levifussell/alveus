@@ -31,14 +31,23 @@ class VaeWrapper():
         """
         TODO
         """
-        self.vae = VAE(input_size=input_size, latent_variable_size=dimension_reduction, epochs=300, learning_rate=1e-3, batch_size=128)
+        self.vae = VAE(input_size=input_size, latent_variable_size=dimension_reduction, epochs=30, learning_rate=1e-3, batch_size=128)
         self.has_been_trained = False
+
+        # record outputs
+        self.max_outputs_hist = 4000
+        self.output_count = 0
+        self.outputs_hist = np.zeros((self.max_outputs_hist, dimension_reduction))
 
     def forward(self, x):
         assert self.has_been_trained, "VAE encoder has not been trained before feeding forward."
         x_var = Variable(th.FloatTensor(x.reshape(1, -1).squeeze()))
         mu, logvar = self.vae.encode(x_var)
         mu_np = mu.data.numpy()
+
+        if self.output_count < self.max_outputs_hist:
+            self.outputs_hist[self.output_count, :] = mu_np
+            self.output_count += 1
         
         return mu_np
 
