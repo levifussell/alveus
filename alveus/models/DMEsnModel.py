@@ -13,6 +13,9 @@ class DMEsnModel(LayeredModel):
                  res_initialise_strategies=['uniform'],
                  encoder_layers=[LayerPcaEncoder],
                  encoder_dimensions=[60],
+                    # if set to true, the first encoder will be trained ONCE and used for all subsequent encoders 
+                    #    (NOTE: there is an assumption that all encoder dimensions are the same in the encoder_dimensions list)
+                 reuse_encoder=False, 
                  activation=np.tanh):
         """
         num_reservoirs       : number of reservoirs
@@ -46,6 +49,8 @@ class DMEsnModel(LayeredModel):
             res_initialise_strategies *= num_reservoirs
             encoder_layers *= num_reservoirs - 1
             encoder_dimensions *= num_reservoirs - 1
+
+        self.reuse_encoder = reuse_encoder
 
         layers = []
         # add the reservoirs
@@ -97,11 +102,16 @@ class DMEsnModel(LayeredModel):
         enc_idx = 0
         enc_culm = 0
         for idx,l in enumerate(f_layers):
-            x = l.forward(x)
             if (idx+1) % 2 == 0 and idx < len(self.layers) - 2: # if it is an encoder layer!
+                if self.reuse_encoder:
+                    x = self.layers[1].forward(x) # always use the first encoder
+                else:
+                    x = l.forward(x)
                 encoder_data[enc_culm:(enc_culm + self.encoder_dimensions[enc_idx])] = x.squeeze()
                 enc_culm += self.encoder_dimensions[enc_idx]
                 enc_idx += 1
+            else:
+                x = l.forward(x)
 
         return x, encoder_data  # tuple of the feedforward data and the encoder data
 
@@ -131,10 +141,21 @@ class DMEsnModel(LayeredModel):
                 # the new data which we will fill
                 dataset_res_X_new = np.zeros((np.shape(dataset_res_X)[0], self.layers[l].output_size))
                 # fit the encoder
-                self.layers[l].train(dataset_res_X)
+                #try:
+                if (self.reuse_encoder and l == 1) or not self.reuse_encoder:
+                    try:
+                        self.layers[l].train(dataset_res_X)
+                    except:
+                        return False
                 # move the data through it
                 for idx,x in enumerate(dataset_res_X):
-                    y_p = self.layers[l].forward(x)
+                    try:
+                        if self.reuse_encoder:
+                            y_p = self.layers[1].forward(x)
+                        else:
+                            y_p = self.layers[l].forward(x)
+                    except:
+                        return False
                     # update the dataset as we move through it
                     dataset_res_X_new[idx, :] = y_p
 
@@ -187,6 +208,8 @@ class DMEsnModel(LayeredModel):
 
         # train the linear regression output
         self.layers[-1].train(y_forward, y_nonwarmup)
+
+        return True
 
     def forward(self, x, end_layer=None):
 
