@@ -134,7 +134,7 @@ class DMEsnModel(LayeredModel):
         y_enc_offset = self.layers[-2].num_units
         # custom dataset for reservoir
         dataset_res_X = np.copy(X)
-        print(np.shape(dataset_res_X))
+        # print(np.shape(dataset_res_X))
         for l in range(len(self.layers)-1):
             # encoder layer
             if (l+1) % 2 == 0:
@@ -191,7 +191,7 @@ class DMEsnModel(LayeredModel):
 
             # update the dataset
             dataset_res_X = np.copy(dataset_res_X_new)
-            print(np.shape(dataset_res_X))
+            # print(np.shape(dataset_res_X))
 
         # update the true data by removing the warmup
         y_nonwarmup = y[warmup_timesteps:, :]
