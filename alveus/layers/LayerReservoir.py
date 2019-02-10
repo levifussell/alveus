@@ -40,6 +40,7 @@ class LayerReservoir(Layer):
         self.debug = debug
 
         self.input_weights_scale = None
+        self.state = None
         self.W_in = np.zeros((self.num_units, self.input_size))
         self.W_in_init_strategy = None
 
@@ -49,7 +50,16 @@ class LayerReservoir(Layer):
         (description):
         Here you describe a printout of your reservoir
         """
-        pass
+        raise NotImplementedError("abstract LayerReservoir class does not have info method implemented")
+
+    def reset(self):
+        raise NotImplementedError("abstract LayerReservoir class does not have reset method implemented")
+
+    def save_state(self):
+        raise NotImplementedError("abstract LayerReservoir class does not have save_state method implemented")
+
+    def load_state(self):
+        raise NotImplementedError("abstract LayerReservoir class does not have load_state method implemented")
 
     def initialize_input_weights(self, strategy='uniform-binary-sign', scale=1e-2, offset=0.5, sparsity=1.0):
         """
@@ -84,7 +94,7 @@ class LayerReservoir(Layer):
         self.ins_init = True
 
     def initialize_reservoir(self, strategy='uniform', **kwargs):
-        pass
+        raise NotImplementedError("abstract LayerReservoir class does not have initialise_reservoir method implemented")
 
     def forward(self, x):
         """
@@ -94,4 +104,3 @@ class LayerReservoir(Layer):
         """
         super(LayerReservoir, self).forward(x)
 
-        pass

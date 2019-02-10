@@ -63,6 +63,7 @@ if __name__ == "__main__":
         print('ESN NRMSE: %f' % error_first)
 
         gen_data = np.vstack((X_train[-300:], X_valid))
+        print(gen_data)
         esn_outputs = esn.generate(gen_data, len(y_valid), warmup_timesteps=300)
         n_esn_outputs.append(esn_outputs)
 
