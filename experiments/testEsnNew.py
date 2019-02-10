@@ -12,7 +12,8 @@ from alveus.models.EsnModel import EsnModel
 from alveus.utils.metrics import nrmse
 
 if __name__ == "__main__":
-    data = np.array([run(6100)]).reshape(-1, 1)
+    #data = np.array([run(6100)]).reshape(-1, 1)
+    data = np.array([run(5100)]).reshape(-1, 1)
     # data = np.array([runHenon(6100, dimensions=1)]).reshape(-1, 1)
     # normalising the data seems to stabilise the noise a bit
 
@@ -20,7 +21,8 @@ if __name__ == "__main__":
     # data -= 0.5
     # data *= 2.
     data_mean = np.mean(data, axis=0)
-    split = 5100
+    #split = 5100
+    split = 4000
     # adding a bias significantly improves performance
     X_train = np.hstack((np.array(data[:split-1]), np.ones_like(data[:split-1, :1])))
     y_train = np.array(data[1:split])

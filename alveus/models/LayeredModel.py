@@ -13,7 +13,11 @@ class LayeredModel(object):
 
         # check that the output of each layer is the same size as the input of
         # the next layer
+        #for l1, l2 in zip(layers[:-1], layers[1:]):
+        #    print(l1.output_size, l2.input_size)
         for l1, l2 in zip(layers[:-1], layers[1:]):
+            #print(l1,l2)
+            #print(l1.output_size,l2.input_size)
             assert l1.output_size == l2.input_size, "layers do not match input to output in the model"
 
         self.layers = layers
@@ -41,6 +45,7 @@ class LayeredModel(object):
         #     x = np.array(l.forward(x))
 
         for l in f_layers:
+            #print(l.info())
             x = l.forward(x)
 
         return x
