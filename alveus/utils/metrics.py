@@ -22,12 +22,10 @@ def nrmse(y_true, y_pred, MEAN_OF_DATA):
     std = np.sum(np.square(y_true - MEAN_OF_DATA))
     errors = np.sum(np.square(y_true - y_pred))
 
-    return np.sqrt(errors / std)
-
+    return np.sqrt(errors / (std + 1e-8))
 
 def gaussian_kernel(X, Y, sigma):
     return np.sum(rbf_kernel(X, Y, gamma=sigma), axis=0)
-
 
 def MMD(X, Y, kernel=gaussian_kernel, sigma=[None, None, None]):
     xx = kernel(X, X, sigma[0])
